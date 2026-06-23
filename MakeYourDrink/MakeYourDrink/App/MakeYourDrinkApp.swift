@@ -9,13 +9,29 @@ import SwiftUI
 
 @main
 struct MakeYourDrinkApp: App {
+
     @StateObject private var appState = AppState()
+    @State private var hasSeenOnboarding = OnboardingStorage.hasSeenOnboarding
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .environmentObject(appState)
+
+            if hasSeenOnboarding {
+
+                MainTabView()
+                    .environmentObject(appState)
+                    .preferredColorScheme(.dark)
+
+            } else {
+
+                OnboardingView {
+
+                    OnboardingStorage.complete()
+
+                    hasSeenOnboarding = true
+                }
                 .preferredColorScheme(.dark)
+            }
         }
     }
 }
