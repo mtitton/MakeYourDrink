@@ -40,6 +40,19 @@ struct HomeView: View {
             Text("Transforme ingredientes em drinks.")
                 .font(.subheadline)
                 .foregroundStyle(DrinkColors.textSecondary)
+            
+            NavigationLink {
+                ShoppingListView()
+            } label: {
+                HStack {
+                    Image(systemName: "cart.fill")
+                    Text("Lista de Compras Inteligente")
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(DrinkColors.accent)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 8)
         }
     }
 
