@@ -12,7 +12,7 @@ struct Drink: Identifiable, Hashable {
     let name: String
     let description: String
     let imageName: String
-    let ingredients: [String]
+    let ingredients: [DrinkIngredient]
     let instructions: [String]
     let alcoholicLevel: AlcoholicLevel
     let difficulty: Difficulty
@@ -23,7 +23,7 @@ struct Drink: Identifiable, Hashable {
         name: String,
         description: String,
         imageName: String,
-        ingredients: [String],
+        ingredients: [DrinkIngredient],
         instructions: [String],
         alcoholicLevel: AlcoholicLevel,
         difficulty: Difficulty,

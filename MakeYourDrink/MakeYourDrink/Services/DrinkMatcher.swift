@@ -16,23 +16,34 @@ struct DrinkMatch: Identifiable {
 }
 
 final class DrinkMatcher {
-    static func match(drinks: [Drink], userIngredients: [Ingredient]) -> [DrinkMatch] {
-        let userIngredientNames = Set(userIngredients.map { $0.name.lowercased() })
+    static func match(
+        drinks: [Drink],
+        userIngredients: [Ingredient]
+    ) -> [DrinkMatch] {
+        let userIngredientNames = Set(
+            userIngredients.map { $0.name.lowercased() }
+        )
 
         return drinks.map { drink in
-            let drinkIngredients = drink.ingredients.map { $0.lowercased() }
-
-            let available = drink.ingredients.filter {
-                userIngredientNames.contains($0.lowercased())
+            let drinkIngredientNames = drink.ingredients.map {
+                $0.name.lowercased()
             }
 
-            let missing = drink.ingredients.filter {
-                !userIngredientNames.contains($0.lowercased())
-            }
+            let available = drink.ingredients
+                .filter {
+                    userIngredientNames.contains($0.name.lowercased())
+                }
+                .map { $0.name }
 
-            let percentage = drinkIngredients.isEmpty
+            let missing = drink.ingredients
+                .filter {
+                    !userIngredientNames.contains($0.name.lowercased())
+                }
+                .map { $0.name }
+
+            let percentage = drinkIngredientNames.isEmpty
                 ? 0
-                : Int((Double(available.count) / Double(drinkIngredients.count)) * 100)
+                : Int((Double(available.count) / Double(drinkIngredientNames.count)) * 100)
 
             return DrinkMatch(
                 drink: drink,

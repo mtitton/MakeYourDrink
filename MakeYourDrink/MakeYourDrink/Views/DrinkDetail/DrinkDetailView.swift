@@ -198,14 +198,21 @@ struct DrinkDetailView: View {
 
             VStack(spacing: 10) {
                 ForEach(match.drink.ingredients, id: \.self) { ingredient in
-                    let isAvailable = match.availableIngredients.contains(ingredient)
+                    let isAvailable = match.availableIngredients.contains(ingredient.name)
+                    let totalAmount = ingredient.amount * Double(servings)
 
                     HStack {
                         Image(systemName: isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
                             .foregroundStyle(isAvailable ? DrinkColors.success : DrinkColors.danger)
 
-                        Text(servings == 1 ? ingredient : "\(ingredient) × \(servings)")
-                            .foregroundStyle(DrinkColors.textPrimary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(ingredient.name)
+                                .foregroundStyle(DrinkColors.textPrimary)
+
+                            Text("\(formattedAmount(totalAmount)) \(ingredient.unit.rawValue)")
+                                .font(.caption)
+                                .foregroundStyle(DrinkColors.textSecondary)
+                        }
 
                         Spacer()
                     }
@@ -216,12 +223,20 @@ struct DrinkDetailView: View {
             }
         }
     }
+    
+    private func formattedAmount(_ value: Double) -> String {
+        if value.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(Int(value))
+        }
+
+        return String(format: "%.1f", value)
+    }
 
     private var prepareButton: some View {
-        Button {
-            // Futuro: modo preparo passo a passo
+        NavigationLink {
+            PreparationView(drink: match.drink)
         } label: {
-            Text(match.matchPercentage == 100 ? "Preparar agora" : "Ver o que falta")
+            Text(match.matchPercentage == 100 ? "Preparar agora" : "Ver o preparo")
                 .font(.headline)
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)

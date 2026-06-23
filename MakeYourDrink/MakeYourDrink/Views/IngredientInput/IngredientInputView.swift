@@ -19,11 +19,16 @@ struct IngredientInputView: View {
 
                     header
 
-                    inputCard(
-                        icon: "camera.viewfinder",
-                        title: "Tirar Foto",
-                        subtitle: "Escaneie sua bancada, geladeira ou bar."
-                    )
+                    NavigationLink {
+                        ScanIngredientsView()
+                    } label: {
+                        inputCard(
+                            icon: "camera.viewfinder",
+                            title: "Tirar Foto",
+                            subtitle: "Escaneie sua bancada, geladeira ou bar."
+                        )
+                    }
+                    .buttonStyle(.plain)
 
                     NavigationLink {
                         TextIngredientInputView()
