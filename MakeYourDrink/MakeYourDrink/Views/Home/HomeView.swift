@@ -59,8 +59,8 @@ struct HomeView: View {
                     .foregroundStyle(DrinkColors.textSecondary)
             }
 
-            Button {
-                // Futuro: abrir câmera
+            NavigationLink {
+                IngredientInputView()
             } label: {
                 Text("Começar scan")
                     .font(.headline)
@@ -68,7 +68,12 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(DrinkColors.accent)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: 16,
+                            style: .continuous
+                        )
+                    )
             }
         }
         .padding(20)

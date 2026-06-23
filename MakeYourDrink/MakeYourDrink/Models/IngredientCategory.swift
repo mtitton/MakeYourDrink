@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum IngredientCategory: String, CaseIterable, Identifiable {
+enum IngredientCategory: String, CaseIterable, Identifiable, Codable {
     case spirits = "Destilados"
     case fruits = "Frutas"
     case mixers = "Mixers"

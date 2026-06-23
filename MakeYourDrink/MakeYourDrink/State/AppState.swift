@@ -10,8 +10,22 @@ import Combine
 
 @MainActor
 final class AppState: ObservableObject {
-    @Published var userIngredients: [Ingredient] = MockData.userBar
-    @Published var favoriteDrinkIDs: Set<UUID> = []
+    @Published var userIngredients: [Ingredient] {
+        didSet {
+            LocalStorageService.saveUserIngredients(userIngredients)
+        }
+    }
+
+    @Published var favoriteDrinkIDs: Set<UUID> {
+        didSet {
+            LocalStorageService.saveFavoriteDrinkIDs(favoriteDrinkIDs)
+        }
+    }
+
+    init() {
+        self.userIngredients = LocalStorageService.loadUserIngredients() ?? MockData.userBar
+        self.favoriteDrinkIDs = LocalStorageService.loadFavoriteDrinkIDs()
+    }
 
     var matches: [DrinkMatch] {
         DrinkMatcher.match(
