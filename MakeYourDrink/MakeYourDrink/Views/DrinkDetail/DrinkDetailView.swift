@@ -9,7 +9,8 @@ import SwiftUI
 
 struct DrinkDetailView: View {
     @EnvironmentObject private var appState: AppState
-    
+    @State private var servings = 1
+
     let match: DrinkMatch
 
     var body: some View {
@@ -20,11 +21,11 @@ struct DrinkDetailView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
                     header
-
                     matchSection
-
+                    availabilitySection
+                    partyModeSection
                     ingredientsSection
-
+                    prepareButton
                     instructionsSection
                 }
                 .padding(.horizontal, 20)
@@ -108,6 +109,87 @@ struct DrinkDetailView: View {
         }
     }
 
+    private var availabilitySection: some View {
+        HStack(spacing: 12) {
+            availabilityCard(
+                title: "Você tem",
+                value: "\(match.availableIngredients.count)",
+                icon: "checkmark.circle.fill",
+                color: DrinkColors.success
+            )
+
+            availabilityCard(
+                title: "Falta",
+                value: "\(match.missingIngredients.count)",
+                icon: "xmark.circle.fill",
+                color: DrinkColors.danger
+            )
+        }
+    }
+
+    private func availabilityCard(
+        title: String,
+        value: String,
+        icon: String,
+        color: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+
+            Text(value)
+                .font(.largeTitle.bold())
+                .foregroundStyle(DrinkColors.textPrimary)
+
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(DrinkColors.textSecondary)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(DrinkColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+
+    private var partyModeSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Party Mode")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(DrinkColors.textPrimary)
+
+            HStack {
+                Button {
+                    if servings > 1 {
+                        servings -= 1
+                    }
+                } label: {
+                    Image(systemName: "minus.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(DrinkColors.accent)
+                }
+
+                Spacer()
+
+                Text("\(servings) pessoa\(servings == 1 ? "" : "s")")
+                    .font(.headline)
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Spacer()
+
+                Button {
+                    servings += 1
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(DrinkColors.accent)
+                }
+            }
+            .padding(18)
+            .background(DrinkColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        }
+    }
+
     private var ingredientsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Ingredientes")
@@ -122,7 +204,7 @@ struct DrinkDetailView: View {
                         Image(systemName: isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
                             .foregroundStyle(isAvailable ? DrinkColors.success : DrinkColors.danger)
 
-                        Text(ingredient)
+                        Text(servings == 1 ? ingredient : "\(ingredient) × \(servings)")
                             .foregroundStyle(DrinkColors.textPrimary)
 
                         Spacer()
@@ -132,6 +214,20 @@ struct DrinkDetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
             }
+        }
+    }
+
+    private var prepareButton: some View {
+        Button {
+            // Futuro: modo preparo passo a passo
+        } label: {
+            Text(match.matchPercentage == 100 ? "Preparar agora" : "Ver o que falta")
+                .font(.headline)
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(DrinkColors.accent)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
     }
 

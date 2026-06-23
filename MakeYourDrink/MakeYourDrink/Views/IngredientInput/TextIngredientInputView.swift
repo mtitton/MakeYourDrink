@@ -20,6 +20,11 @@ struct TextIngredientInputView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
+                
+                Text("Exemplo: Tenho gin, limão, vodka e água tônica")
+                    .font(.subheadline)
+                    .foregroundStyle(DrinkColors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 TextEditor(text: $text)
                     .scrollContentBackground(.hidden)
@@ -60,22 +65,18 @@ struct TextIngredientInputView: View {
 
     private func importIngredients() {
 
-        let lines = text
-            .components(separatedBy: .newlines)
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        let ingredients = IngredientParser.parse(
+            text: text,
+            availableIngredients: MockData.ingredients
+        )
 
-        for line in lines {
+        for ingredient in ingredients {
 
-            if let ingredient = MockData.ingredients.first(
-                where: {
-                    $0.name.lowercased() == line.lowercased()
-                }
-            ) {
-                if !appState.userIngredients.contains(ingredient) {
-                    appState.userIngredients.append(ingredient)
-                }
+            if !appState.userIngredients.contains(ingredient) {
+                appState.userIngredients.append(ingredient)
             }
         }
+
+        text = ""
     }
 }

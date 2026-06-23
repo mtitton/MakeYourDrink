@@ -117,24 +117,67 @@ struct HomeView: View {
     }
 
     private var suggestionsSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text("Melhores matches")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(DrinkColors.textPrimary)
+        VStack(alignment: .leading, spacing: 28) {
 
-                Spacer()
-
-                Text("Ver todos")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(DrinkColors.accent)
+            if !readyNow.isEmpty {
+                section(
+                    title: "🍸 Dá para fazer agora",
+                    matches: readyNow
+                )
             }
 
+            if !almostReady.isEmpty {
+                section(
+                    title: "🛒 Falta apenas 1 ingrediente",
+                    matches: almostReady
+                )
+            }
+
+            if !discoverMore.isEmpty {
+                section(
+                    title: "✨ Quase lá",
+                    matches: discoverMore
+                )
+            }
+        }
+    }
+    
+    private func section(
+        title: String,
+        matches: [DrinkMatch]
+    ) -> some View {
+
+        VStack(alignment: .leading, spacing: 14) {
+
+            Text(title)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(DrinkColors.textPrimary)
+
             VStack(spacing: 14) {
-                ForEach(appState.matches.prefix(5)) { match in
+                ForEach(matches.prefix(3)) { match in
                     DrinkCard(match: match)
                 }
             }
+        }
+    }
+    
+    private var readyNow: [DrinkMatch] {
+        appState.matches.filter {
+            $0.matchPercentage == 100
+        }
+    }
+
+    private var almostReady: [DrinkMatch] {
+        appState.matches.filter {
+            $0.missingIngredients.count == 1 &&
+            $0.matchPercentage < 100
+        }
+    }
+
+    private var discoverMore: [DrinkMatch] {
+        appState.matches.filter {
+            $0.matchPercentage >= 50 &&
+            $0.matchPercentage < 100
         }
     }
 }
