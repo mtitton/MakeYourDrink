@@ -11,6 +11,7 @@ final class LocalStorageService {
     private enum Keys {
         static let userIngredients = "make_your_drink_user_ingredients"
         static let favoriteDrinkIDs = "make_your_drink_favorite_drink_ids"
+        static let userPreferences = "make_your_drink_user_preferences"
     }
 
     static func saveUserIngredients(_ ingredients: [Ingredient]) {
@@ -34,5 +35,19 @@ final class LocalStorageService {
     static func loadFavoriteDrinkIDs() -> Set<UUID> {
         let values = UserDefaults.standard.stringArray(forKey: Keys.favoriteDrinkIDs) ?? []
         return Set(values.compactMap { UUID(uuidString: $0) })
+    }
+    
+    static func saveUserPreferences(_ preferences: UserPreferences) {
+        guard let data = try? JSONEncoder().encode(preferences) else { return }
+        UserDefaults.standard.set(data, forKey: Keys.userPreferences)
+    }
+
+    static func loadUserPreferences() -> UserPreferences {
+        guard let data = UserDefaults.standard.data(forKey: Keys.userPreferences),
+              let preferences = try? JSONDecoder().decode(UserPreferences.self, from: data) else {
+            return UserPreferences()
+        }
+
+        return preferences
     }
 }

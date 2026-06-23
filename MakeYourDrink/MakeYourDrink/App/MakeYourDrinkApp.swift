@@ -28,6 +28,7 @@ struct MakeYourDrinkApp: App {
                     OnboardingStorage.complete()
                     hasSeenOnboarding = true
                 }
+                .environmentObject(appState)
                 .preferredColorScheme(.dark)
             }
         }

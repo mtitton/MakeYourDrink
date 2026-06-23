@@ -21,10 +21,17 @@ final class AppState: ObservableObject {
             LocalStorageService.saveFavoriteDrinkIDs(favoriteDrinkIDs)
         }
     }
+    
+    @Published var preferences: UserPreferences {
+        didSet {
+            LocalStorageService.saveUserPreferences(preferences)
+        }
+    }
 
     init() {
         self.userIngredients = LocalStorageService.loadUserIngredients() ?? MockData.userBar
         self.favoriteDrinkIDs = LocalStorageService.loadFavoriteDrinkIDs()
+        self.preferences = LocalStorageService.loadUserPreferences()
     }
 
     var matches: [DrinkMatch] {
