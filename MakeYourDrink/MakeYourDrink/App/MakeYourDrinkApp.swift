@@ -9,25 +9,23 @@ import SwiftUI
 
 @main
 struct MakeYourDrinkApp: App {
-
     @StateObject private var appState = AppState()
+
     @State private var hasSeenOnboarding = OnboardingStorage.hasSeenOnboarding
+    @State private var splashFinished = false
 
     var body: some Scene {
         WindowGroup {
-
-            if hasSeenOnboarding {
-
+            if !splashFinished {
+                SplashView(isFinished: $splashFinished)
+                    .preferredColorScheme(.dark)
+            } else if hasSeenOnboarding {
                 MainTabView()
                     .environmentObject(appState)
                     .preferredColorScheme(.dark)
-
             } else {
-
                 OnboardingView {
-
                     OnboardingStorage.complete()
-
                     hasSeenOnboarding = true
                 }
                 .preferredColorScheme(.dark)
