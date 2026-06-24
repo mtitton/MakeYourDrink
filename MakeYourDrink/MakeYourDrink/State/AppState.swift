@@ -33,12 +33,19 @@ final class AppState: ObservableObject {
             LocalStorageService.saveAISuggestions(savedAISuggestions)
         }
     }
+    
+    @Published var drinkHistory: [DrinkHistoryItem] {
+        didSet {
+            LocalStorageService.saveDrinkHistory(drinkHistory)
+        }
+    }
 
     init() {
         self.userIngredients = LocalStorageService.loadUserIngredients() ?? MockData.userBar
         self.favoriteDrinkIDs = LocalStorageService.loadFavoriteDrinkIDs()
         self.preferences = LocalStorageService.loadUserPreferences()
         self.savedAISuggestions = LocalStorageService.loadAISuggestions()
+        self.drinkHistory = LocalStorageService.loadDrinkHistory()
     }
 
     var matches: [DrinkMatch] {
@@ -80,5 +87,20 @@ final class AppState: ObservableObject {
 
     func isAISuggestionSaved(_ suggestion: AIBartenderSuggestion) -> Bool {
         savedAISuggestions.contains(where: { $0.id == suggestion.id })
+    }
+    
+    func registerPreparedDrink(_ drink: Drink) {
+        let item = DrinkHistoryItem(
+            drinkID: drink.id,
+            drinkName: drink.name,
+            imageName: drink.imageName
+        )
+
+        drinkHistory.removeAll { $0.drinkID == drink.id }
+        drinkHistory.insert(item, at: 0)
+
+        if drinkHistory.count > 20 {
+            drinkHistory = Array(drinkHistory.prefix(20))
+        }
     }
 }

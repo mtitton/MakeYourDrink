@@ -13,6 +13,7 @@ final class LocalStorageService {
         static let favoriteDrinkIDs = "make_your_drink_favorite_drink_ids"
         static let userPreferences = "make_your_drink_user_preferences"
         static let savedAISuggestions = "make_your_drink_saved_ai_suggestions"
+        static let drinkHistory = "make_your_drink_history"
     }
 
     static func saveUserIngredients(_ ingredients: [Ingredient]) {
@@ -64,5 +65,19 @@ final class LocalStorageService {
         }
 
         return suggestions
+    }
+    
+    static func saveDrinkHistory(_ history: [DrinkHistoryItem]) {
+        guard let data = try? JSONEncoder().encode(history) else { return }
+        UserDefaults.standard.set(data, forKey: Keys.drinkHistory)
+    }
+
+    static func loadDrinkHistory() -> [DrinkHistoryItem] {
+        guard let data = UserDefaults.standard.data(forKey: Keys.drinkHistory),
+              let history = try? JSONDecoder().decode([DrinkHistoryItem].self, from: data) else {
+            return []
+        }
+
+        return history
     }
 }

@@ -9,6 +9,9 @@ import SwiftUI
 
 struct PreparationView: View {
     let drink: Drink
+    
+    @EnvironmentObject private var appState: AppState
+    @Environment(\.dismiss) private var dismiss
 
     @State private var currentStep = 0
 
@@ -89,6 +92,9 @@ struct PreparationView: View {
             Button {
                 if currentStep < drink.instructions.count - 1 {
                     currentStep += 1
+                } else {
+                    appState.registerPreparedDrink(drink)
+                    dismiss()
                 }
             } label: {
                 Text(currentStep == drink.instructions.count - 1 ? "Concluir" : "Próximo")

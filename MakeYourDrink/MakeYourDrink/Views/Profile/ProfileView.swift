@@ -20,6 +20,7 @@ struct ProfileView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         header
                         userCard
+                        historyButton
                         preferencesSection
                         myAIDrinksButton
                         editPreferencesButton
@@ -227,6 +228,30 @@ struct ProfileView: View {
                     style: .continuous
                 )
             )
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var historyButton: some View {
+        NavigationLink {
+            DrinkHistoryView()
+        } label: {
+            HStack {
+                Image(systemName: "clock.arrow.circlepath")
+                Text("Últimos preparados")
+
+                Spacer()
+
+                Text("\(appState.drinkHistory.count)")
+                    .foregroundStyle(DrinkColors.textSecondary)
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+            .padding(16)
+            .background(DrinkColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)
     }
