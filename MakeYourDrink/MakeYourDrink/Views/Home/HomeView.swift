@@ -20,6 +20,7 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 28) {
                         premiumHeader
                         featuredBanner
+                        searchButton
                         shoppingListButton
                         scanCard
                         myBarSection
@@ -437,5 +438,27 @@ struct HomeView: View {
                 style: .continuous
             )
         )
+    }
+
+    private var searchButton: some View {
+        NavigationLink {
+            SearchView()
+        } label: {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                Text("Pesquisar drinks")
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(DrinkColors.accent)
+            .padding(16)
+            .background(DrinkColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 }
