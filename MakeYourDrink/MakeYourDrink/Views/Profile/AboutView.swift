@@ -60,7 +60,7 @@ struct AboutView: View {
 
             row(title: "Política de Privacidade", value: "Em breve")
             row(title: "Termos de Uso", value: "Em breve")
-            row(title: "Contato", value: "make.your.drink@app.com")
+            row(title: "Contato", value: "mvtitton@gmail.com")
         }
     }
 

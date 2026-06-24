@@ -21,6 +21,7 @@ struct ProfileView: View {
                         header
                         userCard
                         ProfileStatsView()
+                        achievementsButton
                         historyButton
                         preferencesSection
                         myAIDrinksButton
@@ -275,6 +276,46 @@ struct ProfileView: View {
             .padding(16)
             .background(DrinkColors.card)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var achievementsButton: some View {
+
+        NavigationLink {
+
+            AchievementsView()
+
+        } label: {
+
+            HStack {
+
+                Image(
+                    systemName: "trophy.fill"
+                )
+
+                Text("Conquistas")
+
+                Spacer()
+
+                Image(
+                    systemName: "chevron.right"
+                )
+                .font(.caption)
+                .foregroundStyle(
+                    DrinkColors.textSecondary
+                )
+            }
+            .padding(16)
+            .background(
+                DrinkColors.card
+            )
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: 18,
+                    style: .continuous
+                )
+            )
         }
         .buttonStyle(.plain)
     }
