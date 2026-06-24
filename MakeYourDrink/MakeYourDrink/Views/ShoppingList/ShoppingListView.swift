@@ -51,25 +51,34 @@ struct ShoppingListView: View {
     private var suggestionsSection: some View {
         VStack(spacing: 12) {
             ForEach(suggestions) { suggestion in
-                HStack(spacing: 14) {
-                    Image(systemName: "cart.fill")
-                        .foregroundStyle(DrinkColors.accent)
+                NavigationLink {
+                    ShoppingIngredientDetailView(suggestion: suggestion)
+                } label: {
+                    HStack(spacing: 14) {
+                        Image(systemName: "cart.fill")
+                            .foregroundStyle(DrinkColors.accent)
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(suggestion.ingredientName)
-                            .font(.headline)
-                            .foregroundStyle(DrinkColors.textPrimary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(suggestion.ingredientName)
+                                .font(.headline)
+                                .foregroundStyle(DrinkColors.textPrimary)
 
-                        Text("Desbloqueia \(suggestion.unlockCount) drink\(suggestion.unlockCount == 1 ? "" : "s")")
-                            .font(.subheadline)
+                            Text("Desbloqueia \(suggestion.unlockCount) drink\(suggestion.unlockCount == 1 ? "" : "s")")
+                                .font(.subheadline)
+                                .foregroundStyle(DrinkColors.textSecondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
                             .foregroundStyle(DrinkColors.textSecondary)
                     }
-
-                    Spacer()
+                    .padding(16)
+                    .background(DrinkColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
-                .padding(16)
-                .background(DrinkColors.card)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .buttonStyle(.plain)
             }
         }
     }

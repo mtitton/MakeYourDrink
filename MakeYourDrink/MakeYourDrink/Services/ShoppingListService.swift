@@ -11,25 +11,32 @@ struct ShoppingSuggestion: Identifiable {
     let id = UUID()
     let ingredientName: String
     let unlockCount: Int
+    let affectedMatches: [DrinkMatch]
 }
 
 enum ShoppingListService {
     static func suggestions(
         matches: [DrinkMatch]
     ) -> [ShoppingSuggestion] {
-        let missingIngredients = matches
-            .filter { $0.matchPercentage < 100 }
-            .flatMap { $0.missingIngredients }
+        let incompleteMatches = matches.filter {
+            $0.matchPercentage < 100
+        }
 
-        let grouped = Dictionary(grouping: missingIngredients, by: { $0 })
+        let missingIngredients = Set(
+            incompleteMatches.flatMap { $0.missingIngredients }
+        )
 
-        return grouped
-            .map {
-                ShoppingSuggestion(
-                    ingredientName: $0.key,
-                    unlockCount: $0.value.count
-                )
+        return missingIngredients.map { ingredientName in
+            let affectedMatches = incompleteMatches.filter {
+                $0.missingIngredients.contains(ingredientName)
             }
-            .sorted { $0.unlockCount > $1.unlockCount }
+
+            return ShoppingSuggestion(
+                ingredientName: ingredientName,
+                unlockCount: affectedMatches.count,
+                affectedMatches: affectedMatches
+            )
+        }
+        .sorted { $0.unlockCount > $1.unlockCount }
     }
 }
