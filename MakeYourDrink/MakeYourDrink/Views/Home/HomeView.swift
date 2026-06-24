@@ -131,6 +131,13 @@ struct HomeView: View {
 
     private var suggestionsSection: some View {
         VStack(alignment: .leading, spacing: 28) {
+            
+            if !recommendedForYou.isEmpty {
+                section(
+                    title: "✨ Recomendado para você",
+                    matches: recommendedForYou
+                )
+            }
 
             if !readyNow.isEmpty {
                 section(
@@ -191,6 +198,27 @@ struct HomeView: View {
         appState.matches.filter {
             $0.matchPercentage >= 50 &&
             $0.matchPercentage < 100
+        }
+    }
+    
+    private var recommendedForYou: [DrinkMatch] {
+        appState.matches.filter { match in
+            let matchesBase = match.drink.ingredients.contains { ingredient in
+                appState.preferences.favoriteBases.contains(ingredient.name)
+            }
+
+            let matchesAlcoholLevel: Bool = {
+                switch appState.preferences.preferredAlcoholLevel {
+                case .low:
+                    return match.drink.alcoholicLevel == .low
+                case .medium:
+                    return match.drink.alcoholicLevel == .medium
+                case .high:
+                    return match.drink.alcoholicLevel == .high
+                }
+            }()
+
+            return matchesBase || matchesAlcoholLevel
         }
     }
 }
