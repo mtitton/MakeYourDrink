@@ -22,10 +22,10 @@ struct MainTabView: View {
                     Text("Meu Bar")
                 }
 
-            DiscoverView()
+            AIBartenderView()
                 .tabItem {
-                    Image(systemName: "sparkles")
-                    Text("Descobrir")
+                    Image(systemName: "wand.and.sparkles")
+                    Text("AI")
                 }
 
             FavoritesView()
