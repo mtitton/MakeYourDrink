@@ -38,7 +38,7 @@ struct AIBartenderView: View {
                 .padding(20)
             }
         }
-        .navigationTitle("AI Bartender")
+        .navigationTitle("IA Bartender")
         .navigationBarTitleDisplayMode(.inline)
     }
 

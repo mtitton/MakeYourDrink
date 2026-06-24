@@ -38,7 +38,7 @@ struct SavedAIDrinksView: View {
                 }
             }
         }
-        .navigationTitle("Meus Drinks AI")
+        .navigationTitle("Meus Drinks IA")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -96,7 +96,7 @@ struct SavedAIDrinksView: View {
                 )
 
             Text(
-                "Use o AI Bartender para criar receitas personalizadas."
+                "Use a IA Bartender para criar receitas personalizadas."
             )
             .multilineTextAlignment(.center)
             .foregroundStyle(

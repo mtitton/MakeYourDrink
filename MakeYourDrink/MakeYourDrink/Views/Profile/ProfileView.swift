@@ -122,7 +122,7 @@ struct ProfileView: View {
                     .font(.system(size: 30))
                     .foregroundStyle(DrinkColors.accent)
 
-                Text("Desbloqueie o AI Bartender")
+                Text("Desbloqueie a IA Bartender")
                     .font(.headline)
                     .foregroundStyle(DrinkColors.textPrimary)
 
@@ -210,7 +210,7 @@ struct ProfileView: View {
 
                 Image(systemName: "sparkles")
 
-                Text("Meus Drinks AI")
+                Text("Meus Drinks IA")
 
                 Spacer()
 

@@ -46,7 +46,7 @@ struct PremiumView: View {
 
     private var benefits: some View {
         VStack(spacing: 12) {
-            benefit("AI Bartender ilimitado")
+            benefit("IA Bartender ilimitada")
             benefit("Scan ilimitado de ingredientes")
             benefit("Receitas personalizadas")
             benefit("Sugestões baseadas no seu gosto")
@@ -124,7 +124,7 @@ struct PremiumView: View {
     }
 
     private var footer: some View {
-        Text("Tela demonstrativa. A assinatura será integrada com StoreKit em uma sprint futura.")
+        Text("Em breve. A assinatura será integrada com StoreKit em uma sprint futura.")
             .font(.caption)
             .foregroundStyle(DrinkColors.textSecondary)
             .multilineTextAlignment(.center)
