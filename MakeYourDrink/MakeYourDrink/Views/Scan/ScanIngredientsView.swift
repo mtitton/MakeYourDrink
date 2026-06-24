@@ -19,6 +19,7 @@ struct ScanIngredientsView: View {
     @State private var isScanning = false
     @State private var scanCompleted = false
     @State private var detectedIngredients: [Ingredient] = []
+    @State private var selectedDetectedIngredients: Set<Ingredient> = []
 
     var body: some View {
         ZStack {
@@ -54,7 +55,7 @@ struct ScanIngredientsView: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            Text("Escolha uma foto com rótulos visíveis para detectar ingredientes.")
+            Text("Confirme os ingredientes encontrados antes de adicionar ao seu bar.")
                 .font(.subheadline)
                 .foregroundStyle(DrinkColors.textSecondary)
         }
@@ -131,13 +132,47 @@ struct ScanIngredientsView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            FlowLayout(spacing: 10) {
+            Text("Toque para marcar ou desmarcar.")
+                .font(.subheadline)
+                .foregroundStyle(DrinkColors.textSecondary)
+
+            VStack(spacing: 10) {
                 ForEach(detectedIngredients) { ingredient in
-                    IngredientPill(name: ingredient.name)
+                    detectedIngredientRow(ingredient)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func detectedIngredientRow(_ ingredient: Ingredient) -> some View {
+        let isSelected = selectedDetectedIngredients.contains(ingredient)
+
+        return Button {
+            if isSelected {
+                selectedDetectedIngredients.remove(ingredient)
+            } else {
+                selectedDetectedIngredients.insert(ingredient)
+            }
+        } label: {
+            HStack {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? DrinkColors.success : DrinkColors.textSecondary)
+
+                Text(ingredient.name)
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Spacer()
+
+                Text(ingredient.category.rawValue)
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+            .padding(16)
+            .background(DrinkColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     private var emptyResultSection: some View {
@@ -229,7 +264,7 @@ struct ScanIngredientsView: View {
 
     private var addButton: some View {
         Button {
-            for ingredient in detectedIngredients {
+            for ingredient in selectedDetectedIngredients {
                 if !appState.userIngredients.contains(ingredient) {
                     appState.userIngredients.append(ingredient)
                 }
@@ -237,14 +272,15 @@ struct ScanIngredientsView: View {
 
             dismiss()
         } label: {
-            Text("Adicionar ao Meu Bar")
+            Text("Adicionar \(selectedDetectedIngredients.count) ao Meu Bar")
                 .font(.headline)
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .background(DrinkColors.accent)
+                .background(selectedDetectedIngredients.isEmpty ? DrinkColors.textSecondary : DrinkColors.accent)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
+        .disabled(selectedDetectedIngredients.isEmpty)
     }
 
     private func loadImage(from item: PhotosPickerItem?) {
@@ -252,6 +288,7 @@ struct ScanIngredientsView: View {
 
         scanCompleted = false
         detectedIngredients = []
+        selectedDetectedIngredients = []
 
         Task {
             guard let data = try? await item.loadTransferable(type: Data.self),
@@ -272,12 +309,14 @@ struct ScanIngredientsView: View {
         isScanning = true
         scanCompleted = false
         detectedIngredients = []
+        selectedDetectedIngredients = []
 
         Task {
             let ingredients = await VisionIngredientScanner.scan(image: selectedUIImage)
 
             await MainActor.run {
                 detectedIngredients = ingredients
+                selectedDetectedIngredients = Set(ingredients)
                 isScanning = false
                 scanCompleted = true
             }
