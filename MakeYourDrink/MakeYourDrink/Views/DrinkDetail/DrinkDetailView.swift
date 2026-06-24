@@ -36,7 +36,14 @@ struct DrinkDetailView: View {
         .navigationTitle(match.drink.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                ShareLink(
+                    item: shareText
+                ) {
+                    Image(systemName: "square.and.arrow.up")
+                        .foregroundStyle(DrinkColors.accent)
+                }
+
                 Button {
                     appState.toggleFavorite(match.drink)
                 } label: {
@@ -263,5 +270,34 @@ struct DrinkDetailView: View {
                 }
             }
         }
+    }
+    
+    private var shareText: String {
+        let ingredients = match.drink.ingredients
+            .map {
+                "- \(formattedAmount($0.amount)) \($0.unit.rawValue) \($0.name)"
+            }
+            .joined(separator: "\n")
+
+        let instructions = match.drink.instructions
+            .enumerated()
+            .map {
+                "\($0.offset + 1). \($0.element)"
+            }
+            .joined(separator: "\n")
+
+        return """
+        🍸 \(match.drink.name)
+
+        \(match.drink.description)
+
+        Ingredientes:
+        \(ingredients)
+
+        Modo de preparo:
+        \(instructions)
+
+        Criado no Make Your Drink.
+        """
     }
 }
