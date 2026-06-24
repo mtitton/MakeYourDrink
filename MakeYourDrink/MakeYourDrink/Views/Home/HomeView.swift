@@ -18,10 +18,16 @@ struct HomeView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 28) {
-                        header
+                        premiumHeader
+                        featuredBanner
+                        shoppingListButton
                         scanCard
                         myBarSection
-                        suggestionsSection
+                        if hasAnyMatches {
+                            suggestionsSection
+                        } else {
+                            emptyState
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -30,32 +36,33 @@ struct HomeView: View {
             }
         }
     }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Make Your Drink")
-                .font(.largeTitle.bold())
-                .foregroundStyle(DrinkColors.textPrimary)
-
-            Text("Transforme ingredientes em drinks.")
-                .font(.subheadline)
-                .foregroundStyle(DrinkColors.textSecondary)
-            
-            NavigationLink {
-                ShoppingListView()
-            } label: {
-                HStack {
-                    Image(systemName: "cart.fill")
-                    Text("Lista de Compras Inteligente")
-                }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(DrinkColors.accent)
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 8)
-        }
+    
+    private var hasAnyMatches: Bool {
+        !appState.matches.isEmpty
     }
 
+    private var shoppingListButton: some View {
+        NavigationLink {
+            ShoppingListView()
+        } label: {
+            HStack {
+                Image(systemName: "cart.fill")
+                Text("Lista de Compras Inteligente")
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(DrinkColors.accent)
+            .padding(16)
+            .background(DrinkColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+    
     private var scanCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Image(systemName: "camera.viewfinder")
@@ -181,26 +188,6 @@ struct HomeView: View {
         }
     }
     
-    private var readyNow: [DrinkMatch] {
-        appState.matches.filter {
-            $0.matchPercentage == 100
-        }
-    }
-
-    private var almostReady: [DrinkMatch] {
-        appState.matches.filter {
-            $0.missingIngredients.count == 1 &&
-            $0.matchPercentage < 100
-        }
-    }
-
-    private var discoverMore: [DrinkMatch] {
-        appState.matches.filter {
-            $0.matchPercentage >= 50 &&
-            $0.matchPercentage < 100
-        }
-    }
-    
     private var recommendedForYou: [DrinkMatch] {
         appState.matches.filter { match in
             let matchesBase = match.drink.ingredients.contains { ingredient in
@@ -220,5 +207,235 @@ struct HomeView: View {
 
             return matchesBase || matchesAlcoholLevel
         }
+    }
+
+    private var readyNow: [DrinkMatch] {
+        appState.matches.filter { match in
+            match.matchPercentage == 100 &&
+            !recommendedForYou.contains(where: { $0.drink.id == match.drink.id })
+        }
+    }
+
+    private var almostReady: [DrinkMatch] {
+        appState.matches.filter { match in
+            match.missingIngredients.count == 1 &&
+            match.matchPercentage < 100 &&
+            !recommendedForYou.contains(where: { $0.drink.id == match.drink.id }) &&
+            !readyNow.contains(where: { $0.drink.id == match.drink.id })
+        }
+    }
+
+    private var discoverMore: [DrinkMatch] {
+        appState.matches.filter { match in
+            match.matchPercentage >= 50 &&
+            match.matchPercentage < 100 &&
+            !recommendedForYou.contains(where: { $0.drink.id == match.drink.id }) &&
+            !readyNow.contains(where: { $0.drink.id == match.drink.id }) &&
+            !almostReady.contains(where: { $0.drink.id == match.drink.id })
+        }
+    }
+    
+    private var availableDrinksCount: Int {
+        appState.matches.filter {
+            $0.matchPercentage == 100
+        }.count
+    }
+
+    private var ingredientCount: Int {
+        appState.userIngredients.count
+    }
+    
+    private var premiumHeader: some View {
+        VStack(alignment: .leading, spacing: 16) {
+
+            VStack(alignment: .leading, spacing: 4) {
+
+                Text("Olá 👋")
+                    .font(.title3)
+                    .foregroundStyle(
+                        DrinkColors.textSecondary
+                    )
+
+                Text("Vamos criar algo incrível hoje?")
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(
+                        DrinkColors.textPrimary
+                    )
+            }
+
+            HStack(spacing: 12) {
+
+                statCard(
+                    icon: "shippingbox.fill",
+                    value: "\(ingredientCount)",
+                    title: "Ingredientes"
+                )
+
+                statCard(
+                    icon: "wineglass.fill",
+                    value: "\(availableDrinksCount)",
+                    title: "Disponíveis"
+                )
+            }
+        }
+    }
+    
+    private func statCard(
+        icon: String,
+        value: String,
+        title: String
+    ) -> some View {
+
+        VStack(
+            alignment: .leading,
+            spacing: 10
+        ) {
+
+            Image(systemName: icon)
+                .foregroundStyle(
+                    DrinkColors.accent
+                )
+
+            Text(value)
+                .font(.title.bold())
+                .foregroundStyle(
+                    DrinkColors.textPrimary
+                )
+
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(
+                    DrinkColors.textSecondary
+                )
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            DrinkColors.card
+        )
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 22,
+                style: .continuous
+            )
+        )
+    }
+    
+    private var featuredDrink: DrinkMatch? {
+        appState.matches.max {
+            $0.matchPercentage < $1.matchPercentage
+        }
+    }
+    
+    private var featuredBanner: some View {
+
+        Group {
+
+            if let featuredDrink {
+
+                NavigationLink {
+
+                    DrinkDetailView(
+                        match: featuredDrink
+                    )
+
+                } label: {
+
+                    ZStack {
+
+                        LinearGradient(
+                            colors: [
+                                DrinkColors.accent.opacity(0.8),
+                                DrinkColors.accent.opacity(0.4)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+
+                        HStack {
+
+                            VStack(
+                                alignment: .leading,
+                                spacing: 8
+                            ) {
+
+                                Text("🍸 Drink da Semana")
+                                    .font(.caption.bold())
+
+                                Text(
+                                    featuredDrink.drink.name
+                                )
+                                .font(.title.bold())
+
+                                Text(
+                                    "\(featuredDrink.matchPercentage)% de Match"
+                                )
+                                .font(.subheadline)
+                            }
+
+                            Spacer()
+
+                            Image(
+                                systemName: "sparkles"
+                            )
+                            .font(.largeTitle)
+                        }
+                        .padding()
+                    }
+                    .frame(height: 140)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: 28,
+                            style: .continuous
+                        )
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+    
+    private var emptyState: some View {
+        VStack(spacing: 20) {
+
+            Image(systemName: "wineglass")
+                .font(.system(size: 50))
+                .foregroundStyle(DrinkColors.accent)
+
+            VStack(spacing: 8) {
+                Text("Seu bar está começando")
+                    .font(.title3.bold())
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Text("Adicione mais ingredientes para desbloquear receitas e recomendações.")
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+
+            NavigationLink {
+                IngredientInputView()
+            } label: {
+                Text("Adicionar Ingredientes")
+                    .font(.headline)
+                    .foregroundStyle(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(DrinkColors.accent)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: 16,
+                            style: .continuous
+                        )
+                    )
+            }
+        }
+        .padding(24)
+        .background(DrinkColors.card)
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 28,
+                style: .continuous
+            )
+        )
     }
 }

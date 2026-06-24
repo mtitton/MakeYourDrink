@@ -49,9 +49,12 @@ struct DrinkDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 12) {
-            DrinkImagePlaceholderView(drinkName: match.drink.name)
-                .frame(height: 240)
-                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+            DrinkImageView(
+                imageName: match.drink.imageName,
+                drinkName: match.drink.name
+            )
+            .frame(height: 240)
+            .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
 
             Text(match.drink.description)
                 .font(.subheadline)

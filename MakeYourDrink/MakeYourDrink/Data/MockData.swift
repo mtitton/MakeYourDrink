@@ -510,12 +510,13 @@ enum MockData {
             imageName: "mint_cooler",
             ingredients: [
                 DrinkIngredient(name: "Hortelã", amount: 8, unit: .leaf),
+                DrinkIngredient(name: "Rum", amount: 50, unit: .ml),
                 DrinkIngredient(name: "Água com gás", amount: 150, unit: .ml),
                 DrinkIngredient(name: "Limão", amount: 1, unit: .piece)
             ],
             instructions: [
                 "Macere hortelã.",
-                "Adicione limão.",
+                "Adicione o rum e o limão.",
                 "Complete com água com gás."
             ],
             alcoholicLevel: .low,
