@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @EnvironmentObject private var appState: AppState
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -19,6 +21,7 @@ struct ProfileView: View {
                         header
                         userCard
                         preferencesSection
+                        editPreferencesButton
                         premiumSection
                     }
                     .padding(.horizontal, 20)
@@ -37,7 +40,7 @@ struct ProfileView: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            Text("Personalize o app para receber sugestões melhores.")
+            Text("Suas preferências ajudam o app a recomendar drinks melhores.")
                 .font(.subheadline)
                 .foregroundStyle(DrinkColors.textSecondary)
         }
@@ -59,7 +62,7 @@ struct ProfileView: View {
                     .font(.headline)
                     .foregroundStyle(DrinkColors.textPrimary)
 
-                Text("12 drinks descobertos")
+                Text("\(appState.favoriteDrinkIDs.count) drink\(appState.favoriteDrinkIDs.count == 1 ? "" : "s") favorito\(appState.favoriteDrinkIDs.count == 1 ? "" : "s")")
                     .font(.subheadline)
                     .foregroundStyle(DrinkColors.textSecondary)
             }
@@ -79,27 +82,25 @@ struct ProfileView: View {
 
             VStack(spacing: 10) {
                 profileRow(
-                    icon: "sparkles",
-                    title: "Nível de experiência",
-                    value: "Iniciante"
-                )
-
-                profileRow(
-                    icon: "drop.fill",
-                    title: "Teor alcoólico preferido",
-                    value: "Médio"
+                    icon: "wineglass.fill",
+                    title: "Bases favoritas",
+                    value: appState.preferences.favoriteBases.isEmpty
+                        ? "Não definido"
+                        : appState.preferences.favoriteBases.joined(separator: ", ")
                 )
 
                 profileRow(
                     icon: "leaf.fill",
                     title: "Sabores favoritos",
-                    value: "Cítrico"
+                    value: appState.preferences.favoriteFlavors.isEmpty
+                        ? "Não definido"
+                        : appState.preferences.favoriteFlavors.joined(separator: ", ")
                 )
 
                 profileRow(
-                    icon: "globe.europe.africa.fill",
-                    title: "Drinks do mundo",
-                    value: "Ativado"
+                    icon: "drop.fill",
+                    title: "Teor alcoólico",
+                    value: appState.preferences.preferredAlcoholLevel.rawValue
                 )
             }
         }
@@ -161,21 +162,34 @@ struct ProfileView: View {
                 .foregroundStyle(DrinkColors.accent)
                 .frame(width: 24)
 
-            Text(title)
-                .foregroundStyle(DrinkColors.textPrimary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Text(value)
+                    .font(.subheadline)
+                    .foregroundStyle(DrinkColors.textSecondary)
+                    .lineLimit(2)
+            }
 
             Spacer()
-
-            Text(value)
-                .font(.subheadline)
-                .foregroundStyle(DrinkColors.textSecondary)
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(DrinkColors.textSecondary)
         }
         .padding(16)
         .background(DrinkColors.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+    
+    private var editPreferencesButton: some View {
+        NavigationLink {
+            EditPreferencesView()
+        } label: {
+            Text("Editar Preferências")
+                .font(.headline)
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(DrinkColors.accent)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
     }
 }
