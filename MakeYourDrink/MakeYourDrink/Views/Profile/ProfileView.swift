@@ -20,6 +20,7 @@ struct ProfileView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         header
                         userCard
+                        ProfileStatsView()
                         historyButton
                         preferencesSection
                         myAIDrinksButton
