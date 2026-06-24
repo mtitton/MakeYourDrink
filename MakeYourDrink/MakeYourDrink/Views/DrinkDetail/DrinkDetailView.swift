@@ -73,6 +73,16 @@ struct DrinkDetailView: View {
             }
             .font(.caption.weight(.medium))
             .foregroundStyle(DrinkColors.textSecondary)
+            
+            if let rating = appState.rating(for: match.drink) {
+                HStack(spacing: 4) {
+                    ForEach(1...5, id: \.self) { value in
+                        Image(systemName: value <= rating ? "star.fill" : "star")
+                            .foregroundStyle(DrinkColors.accent)
+                    }
+                }
+                .font(.caption)
+            }
         }
     }
 

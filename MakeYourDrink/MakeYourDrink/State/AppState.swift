@@ -39,6 +39,12 @@ final class AppState: ObservableObject {
             LocalStorageService.saveDrinkHistory(drinkHistory)
         }
     }
+    
+    @Published var drinkRatings: [DrinkRating] {
+        didSet {
+            LocalStorageService.saveDrinkRatings(drinkRatings)
+        }
+    }
 
     init() {
         self.userIngredients = LocalStorageService.loadUserIngredients() ?? MockData.userBar
@@ -46,6 +52,7 @@ final class AppState: ObservableObject {
         self.preferences = LocalStorageService.loadUserPreferences()
         self.savedAISuggestions = LocalStorageService.loadAISuggestions()
         self.drinkHistory = LocalStorageService.loadDrinkHistory()
+        self.drinkRatings = LocalStorageService.loadDrinkRatings()
     }
 
     var matches: [DrinkMatch] {
@@ -102,5 +109,20 @@ final class AppState: ObservableObject {
         if drinkHistory.count > 20 {
             drinkHistory = Array(drinkHistory.prefix(20))
         }
+    }
+    
+    func rateDrink(_ drink: Drink, rating: Int) {
+        drinkRatings.removeAll { $0.drinkID == drink.id }
+
+        let item = DrinkRating(
+            drinkID: drink.id,
+            rating: rating
+        )
+
+        drinkRatings.append(item)
+    }
+
+    func rating(for drink: Drink) -> Int? {
+        drinkRatings.first { $0.drinkID == drink.id }?.rating
     }
 }

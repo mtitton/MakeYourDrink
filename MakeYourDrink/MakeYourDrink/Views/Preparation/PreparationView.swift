@@ -14,6 +14,7 @@ struct PreparationView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var currentStep = 0
+    @State private var showsRatingSheet = false
 
     var body: some View {
         ZStack {
@@ -35,6 +36,12 @@ struct PreparationView: View {
         }
         .navigationTitle(drink.name)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showsRatingSheet) {
+            DrinkRatingSheet(drink: drink) { rating in
+                appState.rateDrink(drink, rating: rating)
+                dismiss()
+            }
+        }
     }
 
     private var progress: some View {
@@ -94,7 +101,7 @@ struct PreparationView: View {
                     currentStep += 1
                 } else {
                     appState.registerPreparedDrink(drink)
-                    dismiss()
+                    showsRatingSheet = true
                 }
             } label: {
                 Text(currentStep == drink.instructions.count - 1 ? "Concluir" : "Próximo")
