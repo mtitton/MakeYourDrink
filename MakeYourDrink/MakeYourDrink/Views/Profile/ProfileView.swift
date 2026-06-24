@@ -21,6 +21,7 @@ struct ProfileView: View {
                         header
                         userCard
                         preferencesSection
+                        myAIDrinksButton
                         editPreferencesButton
                         premiumSection
                     }
@@ -191,5 +192,42 @@ struct ProfileView: View {
                 .background(DrinkColors.accent)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
+    }
+    
+    private var myAIDrinksButton: some View {
+
+        NavigationLink {
+
+            SavedAIDrinksView()
+
+        } label: {
+
+            HStack {
+
+                Image(systemName: "sparkles")
+
+                Text("Meus Drinks AI")
+
+                Spacer()
+
+                Text(
+                    "\(appState.savedAISuggestions.count)"
+                )
+                .foregroundStyle(
+                    DrinkColors.textSecondary
+                )
+            }
+            .padding(16)
+            .background(
+                DrinkColors.card
+            )
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: 18,
+                    style: .continuous
+                )
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
