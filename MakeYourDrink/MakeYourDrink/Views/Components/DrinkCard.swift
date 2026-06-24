@@ -15,6 +15,10 @@ struct DrinkCard: View {
             DrinkDetailView(match: match)
         } label: {
             VStack(alignment: .leading, spacing: 14) {
+                DrinkImagePlaceholderView(drinkName: match.drink.name)
+                    .frame(height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(match.drink.name)

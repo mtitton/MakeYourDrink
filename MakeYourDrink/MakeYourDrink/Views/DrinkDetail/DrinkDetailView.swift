@@ -49,23 +49,9 @@ struct DrinkDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 12) {
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            DrinkColors.cardSecondary,
-                            DrinkColors.card
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(height: 220)
-                .overlay {
-                    Image(systemName: "wineglass.fill")
-                        .font(.system(size: 72))
-                        .foregroundStyle(DrinkColors.accent)
-                }
+            DrinkImagePlaceholderView(drinkName: match.drink.name)
+                .frame(height: 240)
+                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
 
             Text(match.drink.description)
                 .font(.subheadline)

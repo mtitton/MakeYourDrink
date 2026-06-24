@@ -126,8 +126,8 @@ struct ProfileView: View {
                     .font(.subheadline)
                     .foregroundStyle(DrinkColors.textSecondary)
 
-                Button {
-                    // Futuro: paywall
+                NavigationLink {
+                    PremiumView()
                 } label: {
                     Text("Ver Premium")
                         .font(.headline)
