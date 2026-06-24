@@ -25,6 +25,7 @@ struct ProfileView: View {
                         preferencesSection
                         myAIDrinksButton
                         editPreferencesButton
+                        aboutButton
                         premiumSection
                     }
                     .padding(.horizontal, 20)
@@ -245,6 +246,27 @@ struct ProfileView: View {
 
                 Text("\(appState.drinkHistory.count)")
                     .foregroundStyle(DrinkColors.textSecondary)
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+            .padding(16)
+            .background(DrinkColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var aboutButton: some View {
+        NavigationLink {
+            AboutView()
+        } label: {
+            HStack {
+                Image(systemName: "info.circle.fill")
+                Text("Sobre o App")
+
+                Spacer()
 
                 Image(systemName: "chevron.right")
                     .font(.caption)
