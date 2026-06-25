@@ -20,6 +20,7 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 28) {
                         premiumHeader
                         featuredBanner
+                        drinkOfTheDaySection
                         searchButton
                         shoppingListButton
                         scanCard
@@ -460,5 +461,85 @@ struct HomeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)
+    }
+    
+    private var drinkOfTheDay: DrinkMatch? {
+        DrinkOfTheDayService.drink(
+            from: appState.matches
+        )
+    }
+    
+    private var drinkOfTheDaySection: some View {
+
+        Group {
+
+            if let drink = drinkOfTheDay {
+
+                NavigationLink {
+
+                    DrinkDetailView(match: drink)
+
+                } label: {
+
+                    VStack(alignment: .leading, spacing: 14) {
+
+                        HStack {
+
+                            VStack(
+                                alignment: .leading,
+                                spacing: 4
+                            ) {
+
+                                Text("🍸 Drink do Dia")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.white.opacity(0.8))
+
+                                Text(drink.drink.name)
+                                    .font(.title2.bold())
+                                    .foregroundStyle(.white)
+
+                                Text(
+                                    "Você possui \(drink.matchPercentage)% dos ingredientes."
+                                )
+                                .font(.subheadline)
+                                .foregroundStyle(.white.opacity(0.85))
+                            }
+
+                            Spacer()
+
+                            DrinkImageView(
+                                imageName: drink.drink.imageName,
+                                drinkName: drink.drink.name
+                            )
+                            .frame(width: 90, height: 90)
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: 20,
+                                    style: .continuous
+                                )
+                            )
+                        }
+                    }
+                    .padding(20)
+                    .background(
+                        LinearGradient(
+                            colors: [
+                                DrinkColors.accent,
+                                DrinkColors.accent.opacity(0.65)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: 28,
+                            style: .continuous
+                        )
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 }
