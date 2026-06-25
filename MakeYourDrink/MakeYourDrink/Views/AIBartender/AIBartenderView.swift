@@ -203,14 +203,26 @@ struct AIBartenderView: View {
         suggestion = nil
 
         Task {
-            let result = await AIBartenderService.createSuggestion(
+            let appleResult = await AppleAIBartenderService.createSuggestion(
                 prompt: prompt,
                 userIngredients: appState.userIngredients,
                 preferences: appState.preferences
             )
 
+            let finalResult: AIBartenderSuggestion
+
+            if let appleResult {
+                finalResult = appleResult
+            } else {
+                finalResult = await AIBartenderService.createSuggestion(
+                    prompt: prompt,
+                    userIngredients: appState.userIngredients,
+                    preferences: appState.preferences
+                )
+            }
+
             await MainActor.run {
-                suggestion = result
+                suggestion = finalResult
                 isLoading = false
             }
         }

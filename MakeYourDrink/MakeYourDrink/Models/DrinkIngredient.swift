@@ -11,13 +11,13 @@ struct DrinkIngredient: Identifiable, Hashable, Codable {
     let id: UUID
     let name: String
     let amount: Double
-    let unit: Unit
+    let unit: DrinkUnit
 
     init(
         id: UUID = UUID(),
         name: String,
         amount: Double,
-        unit: Unit
+        unit: DrinkUnit
     ) {
         self.id = id
         self.name = name
@@ -26,7 +26,7 @@ struct DrinkIngredient: Identifiable, Hashable, Codable {
     }
 }
 
-enum Unit: String, Codable {
+enum DrinkUnit: String, Codable {
     case ml = "ml"
     case piece = "un"
     case leaf = "folhas"
