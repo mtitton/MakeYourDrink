@@ -16,30 +16,33 @@ struct AIBartenderView: View {
     @State private var suggestion: AIBartenderSuggestion?
 
     var body: some View {
-        ZStack {
-            DrinkColors.background.ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                DrinkColors.background.ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    header
-                    input
-                    createButton
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        header
+                        wizardCard
+                        input
+                        createButton
 
-                    if isLoading {
-                        ProgressView("Criando drink...")
-                            .tint(DrinkColors.accent)
-                            .foregroundStyle(DrinkColors.textPrimary)
+                        if isLoading {
+                            ProgressView("Criando drink...")
+                                .tint(DrinkColors.accent)
+                                .foregroundStyle(DrinkColors.textPrimary)
+                        }
+
+                        if let suggestion {
+                            suggestionCard(suggestion)
+                        }
                     }
-
-                    if let suggestion {
-                        suggestionCard(suggestion)
-                    }
+                    .padding(20)
                 }
-                .padding(20)
             }
+            .navigationTitle("IA Bartender")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("IA Bartender")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
     private var header: some View {
@@ -48,10 +51,54 @@ struct AIBartenderView: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            Text("Diga o que você quer beber e o bartender inteligente cria uma sugestão.")
+            Text("Use o Drink Wizard ou descreva livremente o que você quer beber.")
                 .font(.subheadline)
                 .foregroundStyle(DrinkColors.textSecondary)
         }
+    }
+
+    private var wizardCard: some View {
+        NavigationLink {
+            DrinkWizardView { generatedPrompt in
+                prompt = generatedPrompt
+                createDrink()
+            }
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "wand.and.stars")
+                    .font(.title2)
+                    .foregroundStyle(DrinkColors.accent)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Usar Drink Wizard")
+                        .font(.headline)
+                        .foregroundStyle(DrinkColors.textPrimary)
+
+                    Text("Responda algumas perguntas e deixe a IA montar a receita ideal.")
+                        .font(.subheadline)
+                        .foregroundStyle(DrinkColors.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+            .padding(18)
+            .background(
+                LinearGradient(
+                    colors: [
+                        DrinkColors.cardSecondary,
+                        DrinkColors.card
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     private var input: some View {
@@ -93,10 +140,10 @@ struct AIBartenderView: View {
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .background(prompt.isEmpty ? DrinkColors.textSecondary : DrinkColors.accent)
+                .background(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? DrinkColors.textSecondary : DrinkColors.accent)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
-        .disabled(prompt.isEmpty || isLoading)
+        .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
     }
 
     private func suggestionCard(_ suggestion: AIBartenderSuggestion) -> some View {
@@ -130,9 +177,10 @@ struct AIBartenderView: View {
                         .foregroundStyle(DrinkColors.textSecondary)
                 }
             }
-            
+
             Button {
                 appState.saveAISuggestion(suggestion)
+                HapticService.success()
             } label: {
                 Text(appState.isAISuggestionSaved(suggestion) ? "Drink salvo" : "Salvar Drink")
                     .font(.headline)

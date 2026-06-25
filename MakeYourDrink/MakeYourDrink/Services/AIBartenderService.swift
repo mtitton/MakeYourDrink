@@ -17,7 +17,8 @@ enum AIBartenderService {
 
         let analysis = PromptAnalyzer.analyze(prompt)
 
-        let base = analysis.preferredBase
+        let base = requiredBase(from: prompt)
+            ?? analysis.preferredBase
             ?? preferences.favoriteBases.first
             ?? userIngredients.first(where: { $0.category == .spirits })?.name
             ?? "Gin"
@@ -30,6 +31,42 @@ enum AIBartenderService {
             flavor: flavor,
             strength: strength
         )
+    }
+
+    private static func requiredBase(from prompt: String) -> String? {
+        let lowercasedPrompt = prompt.lowercased()
+
+        if lowercasedPrompt.contains("base alcoólica obrigatória: vodka") ||
+            lowercasedPrompt.contains("base alcoólica: vodka") {
+            return "Vodka"
+        }
+
+        if lowercasedPrompt.contains("base alcoólica obrigatória: gin") ||
+            lowercasedPrompt.contains("base alcoólica: gin") {
+            return "Gin"
+        }
+
+        if lowercasedPrompt.contains("base alcoólica obrigatória: rum") ||
+            lowercasedPrompt.contains("base alcoólica: rum") {
+            return "Rum"
+        }
+
+        if lowercasedPrompt.contains("base alcoólica obrigatória: whisky") ||
+            lowercasedPrompt.contains("base alcoólica: whisky") {
+            return "Whisky"
+        }
+
+        if lowercasedPrompt.contains("base alcoólica obrigatória: tequila") ||
+            lowercasedPrompt.contains("base alcoólica: tequila") {
+            return "Tequila"
+        }
+
+        if lowercasedPrompt.contains("base alcoólica obrigatória: cachaça") ||
+            lowercasedPrompt.contains("base alcoólica: cachaça") {
+            return "Cachaça"
+        }
+
+        return nil
     }
 
     private static func buildSuggestion(
