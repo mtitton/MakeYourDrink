@@ -50,9 +50,11 @@ struct DrinkDetailView: View {
 
                 Button {
                     appState.toggleFavorite(match.drink)
+                    HapticService.success()
                 } label: {
                     Image(systemName: appState.isFavorite(match.drink) ? "heart.fill" : "heart")
                         .foregroundStyle(DrinkColors.accent)
+                        .symbolEffect(.bounce, value: appState.isFavorite(match.drink))
                 }
             }
         }
@@ -176,6 +178,7 @@ struct DrinkDetailView: View {
                     ForEach(partyOptions, id: \.self) { option in
                         Button {
                             servings = option
+                            HapticService.light()
                         } label: {
                             Text(option == 1 ? "1 pessoa" : "\(option) pessoas")
                                 .font(.subheadline.weight(.semibold))

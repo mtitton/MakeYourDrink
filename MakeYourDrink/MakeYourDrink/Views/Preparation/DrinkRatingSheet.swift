@@ -40,6 +40,7 @@ struct DrinkRatingSheet: View {
                     ForEach(1...5, id: \.self) { value in
                         Button {
                             selectedRating = value
+                            HapticService.light()
                         } label: {
                             Image(systemName: value <= selectedRating ? "star.fill" : "star")
                                 .font(.system(size: 34))
@@ -50,6 +51,7 @@ struct DrinkRatingSheet: View {
                 }
 
                 Button {
+                    HapticService.success()
                     onRate(selectedRating)
                     dismiss()
                 } label: {
