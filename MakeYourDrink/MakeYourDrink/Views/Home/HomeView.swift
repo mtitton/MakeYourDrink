@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var appState: AppState
+    @Namespace private var drinkNamespace
 
     var body: some View {
         NavigationStack {
@@ -184,7 +185,7 @@ struct HomeView: View {
 
             VStack(spacing: 14) {
                 ForEach(matches.prefix(3)) { match in
-                    DrinkCard(match: match)
+                    DrinkCard(match: match, namespace: drinkNamespace)
                 }
             }
         }
@@ -337,9 +338,7 @@ struct HomeView: View {
 
                 NavigationLink {
 
-                    DrinkDetailView(
-                        match: featuredDrink
-                    )
+                    DrinkDetailView(match: featuredDrink, namespace: drinkNamespace)
 
                 } label: {
 
@@ -477,7 +476,7 @@ struct HomeView: View {
 
                 NavigationLink {
 
-                    DrinkDetailView(match: drink)
+                    DrinkDetailView(match: drink, namespace: drinkNamespace)
 
                 } label: {
 

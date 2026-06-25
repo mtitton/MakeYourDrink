@@ -12,6 +12,7 @@ struct DrinkDetailView: View {
     @State private var servings = 1
 
     let match: DrinkMatch
+    var namespace: Namespace.ID? = nil
 
     private let partyOptions = [1, 2, 4, 6, 8]
 
@@ -41,6 +42,10 @@ struct DrinkDetailView: View {
         }
         .navigationTitle(match.drink.name)
         .navigationBarTitleDisplayMode(.inline)
+        .applyNavigationTransition(
+            id: match.drink.id,
+            namespace: namespace
+        )
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 ShareLink(item: shareText) {

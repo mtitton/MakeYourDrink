@@ -9,10 +9,11 @@ import SwiftUI
 
 struct DrinkCard: View {
     let match: DrinkMatch
+    var namespace: Namespace.ID? = nil
 
     var body: some View {
         NavigationLink {
-            DrinkDetailView(match: match)
+            DrinkDetailView(match: match, namespace: namespace)
         } label: {
             VStack(alignment: .leading, spacing: 14) {
                 DrinkImageView(
@@ -21,7 +22,11 @@ struct DrinkCard: View {
                 )
                 .frame(height: 120)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                
+                .applyMatchedTransitionSource(
+                    id: match.drink.id,
+                    namespace: namespace
+                )
+
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(match.drink.name)
