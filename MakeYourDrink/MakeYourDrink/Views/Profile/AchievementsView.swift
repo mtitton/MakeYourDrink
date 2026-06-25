@@ -74,6 +74,26 @@ struct AchievementsView: View {
                 .foregroundStyle(
                     DrinkColors.textSecondary
                 )
+                
+                ProgressView(value: achievement.progress)
+                    .tint(DrinkColors.accent)
+
+                HStack {
+                    Text("\(achievement.current)/\(achievement.target)")
+                        .font(.caption)
+
+                    Spacer()
+
+                    if achievement.unlocked {
+                        Text("Concluído")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.green)
+                    } else {
+                        Text("\(Int(achievement.progress * 100))%")
+                            .font(.caption)
+                            .foregroundStyle(DrinkColors.textSecondary)
+                    }
+                }
             }
 
             Spacer()
