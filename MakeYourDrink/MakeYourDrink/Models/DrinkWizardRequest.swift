@@ -14,6 +14,7 @@ struct DrinkWizardRequest: Codable, Hashable {
     var occasion: DrinkWizardOccasion?
     var servings: Int
     var allowMissingIngredients: Bool
+    var fruits: [DrinkWizardFruit]
 
     init(
         mood: DrinkWizardMood? = nil,
@@ -21,7 +22,8 @@ struct DrinkWizardRequest: Codable, Hashable {
         intensity: DrinkWizardIntensity? = nil,
         occasion: DrinkWizardOccasion? = nil,
         servings: Int = 1,
-        allowMissingIngredients: Bool = true
+        allowMissingIngredients: Bool = true,
+        fruits: [DrinkWizardFruit] = []
     ) {
         self.mood = mood
         self.base = base
@@ -29,6 +31,7 @@ struct DrinkWizardRequest: Codable, Hashable {
         self.occasion = occasion
         self.servings = servings
         self.allowMissingIngredients = allowMissingIngredients
+        self.fruits = fruits
     }
 }
 
@@ -67,6 +70,18 @@ enum DrinkWizardOccasion: String, CaseIterable, Identifiable, Codable {
     case party = "Festa"
     case date = "Encontro"
     case relax = "Relaxar"
+
+    var id: String { rawValue }
+}
+
+enum DrinkWizardFruit: String, CaseIterable, Identifiable, Codable {
+    case lemon = "Limão"
+    case orange = "Laranja"
+    case strawberry = "Morango"
+    case passionFruit = "Maracujá"
+    case pineapple = "Abacaxi"
+    case berries = "Frutas vermelhas"
+    case any = "Tanto faz"
 
     var id: String { rawValue }
 }

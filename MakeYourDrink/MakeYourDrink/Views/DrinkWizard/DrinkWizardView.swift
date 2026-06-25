@@ -16,7 +16,7 @@ struct DrinkWizardView: View {
     @State private var request = DrinkWizardRequest()
     @State private var step = 0
 
-    private let totalSteps = 5
+    private let totalSteps = 6
 
     var body: some View {
         ZStack {
@@ -83,6 +83,9 @@ struct DrinkWizardView: View {
                 options: DrinkWizardOccasion.allCases,
                 selection: $request.occasion
             )
+            
+        case 4:
+            fruitsStep
 
         default:
             finalStep
@@ -224,8 +227,59 @@ struct DrinkWizardView: View {
             return request.intensity != nil
         case 3:
             return request.occasion != nil
+        case 4:
+            return !request.fruits.isEmpty
         default:
             return true
+        }
+    }
+    
+    private var fruitsStep: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Quer usar alguma fruta?")
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Text("Escolha uma ou mais opções para guiar a receita.")
+                    .font(.subheadline)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+
+            VStack(spacing: 12) {
+                ForEach(DrinkWizardFruit.allCases) { fruit in
+                    Button {
+                        if fruit == .any {
+                            request.fruits = [.any]
+                        } else {
+                            request.fruits.removeAll { $0 == .any }
+
+                            if request.fruits.contains(fruit) {
+                                request.fruits.removeAll { $0 == fruit }
+                            } else {
+                                request.fruits.append(fruit)
+                            }
+                        }
+
+                        HapticService.light()
+                    } label: {
+                        HStack {
+                            Text(fruit.rawValue)
+                                .font(.headline)
+                                .foregroundStyle(DrinkColors.textPrimary)
+
+                            Spacer()
+
+                            Image(systemName: request.fruits.contains(fruit) ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(request.fruits.contains(fruit) ? DrinkColors.accent : DrinkColors.textSecondary)
+                        }
+                        .padding(16)
+                        .background(DrinkColors.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
     }
 }

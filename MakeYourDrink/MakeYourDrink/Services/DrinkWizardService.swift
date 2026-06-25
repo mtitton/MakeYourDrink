@@ -34,6 +34,7 @@ enum DrinkWizardService {
         Estilo desejado: \(request.mood?.rawValue ?? "Não definido")
         Base alcoólica obrigatória: \(selectedBase)
         Intensidade: \(request.intensity?.rawValue ?? "Não definido")
+        Frutas/sabores desejados: \(request.fruits.isEmpty ? "Não definido" : request.fruits.map { $0.rawValue }.joined(separator: ", "))
         Ocasião: \(request.occasion?.rawValue ?? "Não definido")
         Pessoas: \(request.servings)
         Pode usar ingredientes que o usuário não possui: \(request.allowMissingIngredients ? "Sim" : "Não")
