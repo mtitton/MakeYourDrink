@@ -20,6 +20,34 @@ struct ProfileStatsView: View {
         return Double(total) / Double(appState.drinkRatings.count)
     }
 
+    private var mostPreparedDrinkName: String {
+        guard !appState.drinkHistory.isEmpty else { return "-" }
+
+        let grouped = Dictionary(grouping: appState.drinkHistory, by: { $0.drinkName })
+
+        return grouped
+            .max { $0.value.count < $1.value.count }?
+            .key ?? "-"
+    }
+
+    private var bestRatedDrinkName: String {
+        guard let bestRating = appState.drinkRatings.max(by: { $0.rating < $1.rating }) else {
+            return "-"
+        }
+
+        return MockData.drinks.first {
+            $0.id == bestRating.drinkID
+        }?.name ?? "-"
+    }
+
+    private var favoriteBaseName: String {
+        let bases = appState.userIngredients.filter {
+            $0.category == .spirits
+        }
+
+        return bases.first?.name ?? "-"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Estatísticas")
@@ -57,6 +85,38 @@ struct ProfileStatsView: View {
                     title: "Nota média"
                 )
             }
+
+            VStack(spacing: 10) {
+                detailRow(
+                    icon: "flame.fill",
+                    title: "Mais preparado",
+                    value: mostPreparedDrinkName
+                )
+
+                detailRow(
+                    icon: "trophy.fill",
+                    title: "Melhor avaliado",
+                    value: bestRatedDrinkName
+                )
+
+                detailRow(
+                    icon: "drop.fill",
+                    title: "Base no seu bar",
+                    value: favoriteBaseName
+                )
+
+                detailRow(
+                    icon: "sparkles",
+                    title: "Drinks IA salvos",
+                    value: "\(appState.savedAISuggestions.count)"
+                )
+
+                detailRow(
+                    icon: "checkmark.seal.fill",
+                    title: "Avaliações feitas",
+                    value: "\(appState.drinkRatings.count)"
+                )
+            }
         }
     }
 
@@ -81,5 +141,30 @@ struct ProfileStatsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DrinkColors.card)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+
+    private func detailRow(
+        icon: String,
+        title: String,
+        value: String
+    ) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundStyle(DrinkColors.accent)
+                .frame(width: 24)
+
+            Text(title)
+                .foregroundStyle(DrinkColors.textPrimary)
+
+            Spacer()
+
+            Text(value)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(DrinkColors.textSecondary)
+                .lineLimit(1)
+        }
+        .padding(16)
+        .background(DrinkColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
