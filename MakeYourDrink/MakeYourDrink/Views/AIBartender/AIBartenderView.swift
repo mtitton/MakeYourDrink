@@ -14,6 +14,7 @@ struct AIBartenderView: View {
     @State private var prompt = ""
     @State private var isLoading = false
     @State private var suggestion: AIBartenderSuggestion?
+    @State private var recipeMatch: AIRecipeMatch?
 
     var body: some View {
         NavigationStack {
@@ -155,6 +156,10 @@ struct AIBartenderView: View {
             Text(suggestion.description)
                 .font(.subheadline)
                 .foregroundStyle(DrinkColors.textSecondary)
+            
+            if let recipeMatch {
+                AIRecipeMatchCard(match: recipeMatch)
+            }
 
             VStack(alignment: .leading, spacing: 10) {
                 Text("Ingredientes")
@@ -201,6 +206,7 @@ struct AIBartenderView: View {
         isPromptFocused = false
         isLoading = true
         suggestion = nil
+        recipeMatch = nil
 
         Task {
             let appleResult = await AppleAIBartenderService.createSuggestion(
@@ -223,6 +229,10 @@ struct AIBartenderView: View {
 
             await MainActor.run {
                 suggestion = finalResult
+                recipeMatch = AIRecipeMatcher.match(
+                    suggestion: finalResult,
+                    userIngredients: appState.userIngredients
+                )
                 isLoading = false
             }
         }

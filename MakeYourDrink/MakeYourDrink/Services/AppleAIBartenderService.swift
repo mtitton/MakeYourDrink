@@ -91,6 +91,7 @@ enum AppleAIBartenderService {
         - Se o usuário pediu Vodka, não use Gin.
         - Se o usuário pediu Gin, não use Vodka.
         - Se o usuário pediu Rum, não use Gin, Vodka ou Whisky como base.
+        - Se "Pode usar ingredientes que o usuário não possui" for "Não", use SOMENTE ingredientes que o usuário possui.
         - Não invente frutas, xaropes ou ingredientes que não estejam na lista permitida.
         - O nome do drink deve mencionar apenas ingredientes realmente usados.
         - Não use "Apple", "Berry", "Orange", "Tropical", "Passion", "Pineapple" ou similares se o ingrediente correspondente não estiver na receita.
@@ -108,26 +109,47 @@ enum AppleAIBartenderService {
         prompt: String,
         userIngredients: [Ingredient]
     ) -> AIBartenderSuggestion {
-        let allowedNames = Set(
+        let canUseMissingIngredients = allowsMissingIngredients(from: prompt)
+
+        let allowedCatalogNames = Set(
             MockData.ingredients.map {
                 normalized($0.name)
             }
         )
 
+        let userIngredientNames = Set(
+            userIngredients.map {
+                normalized($0.name)
+            }
+        )
+
         let sanitizedIngredients = suggestion.ingredients
-            .filter {
-                allowedNames.contains(normalized($0.name))
+            .filter { ingredient in
+                let name = normalized(ingredient.name)
+
+                if !allowedCatalogNames.contains(name) {
+                    return false
+                }
+
+                if !canUseMissingIngredients {
+                    return userIngredientNames.contains(name)
+                }
+
+                return true
             }
             .map {
                 sanitizeIngredient($0)
             }
 
         let finalIngredients = sanitizedIngredients.isEmpty
-            ? fallbackIngredients(prompt: prompt, userIngredients: userIngredients)
+            ? fallbackIngredients(
+                prompt: prompt,
+                userIngredients: userIngredients
+            )
             : sanitizedIngredients
 
-        let finalName = sanitizedName(
-            suggestion.name,
+        let finalName = CocktailNamingService.bestName(
+            aiName: suggestion.name,
             ingredients: finalIngredients
         )
 
@@ -293,6 +315,16 @@ enum AppleAIBartenderService {
         value
             .lowercased()
             .folding(options: .diacriticInsensitive, locale: .current)
+    }
+    
+    private static func allowsMissingIngredients(from prompt: String) -> Bool {
+        let normalizedPrompt = normalized(prompt)
+
+        if normalizedPrompt.contains("pode usar ingredientes que o usuario nao possui: nao") {
+            return false
+        }
+
+        return true
     }
 }
 
