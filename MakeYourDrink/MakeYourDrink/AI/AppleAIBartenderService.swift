@@ -12,12 +12,14 @@ enum AppleAIBartenderService {
     static func createSuggestion(
         prompt: String,
         userIngredients: [Ingredient],
-        preferences: UserPreferences
+        preferences: UserPreferences,
+        appState: AppState
     ) async -> AIBartenderSuggestion? {
-        let finalPrompt = buildPrompt(
-            prompt: prompt,
-            userIngredients: userIngredients,
-            preferences: preferences
+        let context = UserContext.build(appState: appState)
+
+        let finalPrompt = PromptBuilder.bartenderPrompt(
+            userPrompt: prompt,
+            context: context
         )
 
         do {
@@ -38,8 +40,8 @@ enum AppleAIBartenderService {
 
             let suggestion = response.content.toSuggestion()
 
-            return sanitizeSuggestion(
-                suggestion,
+            return ResponseSanitizer.clean(
+                response.content.toSuggestion(),
                 prompt: prompt,
                 userIngredients: userIngredients
             )

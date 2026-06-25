@@ -212,7 +212,8 @@ struct AIBartenderView: View {
             let appleResult = await AppleAIBartenderService.createSuggestion(
                 prompt: prompt,
                 userIngredients: appState.userIngredients,
-                preferences: appState.preferences
+                preferences: appState.preferences,
+                appState: appState
             )
 
             let finalResult: AIBartenderSuggestion
