@@ -21,13 +21,23 @@ enum AppleAIBartenderService {
         )
 
         do {
-            let session = LanguageModelSession()
-            let response = try await session.respond(to: finalPrompt)
-            let content = String(describing: response.content)
+            let session = LanguageModelSession(
+                instructions: """
+                Você é um bartender especialista.
+                Crie receitas de drinks claras, seguras e fáceis de preparar.
+                Respeite obrigatoriamente a base alcoólica solicitada pelo usuário.
+                """
+            )
 
-            return parseSuggestion(from: content)
+            let response = try await session.respond(
+                generating: AppleAIDrinkRecipe.self
+            ) {
+                Prompt(finalPrompt)
+            }
+
+            return response.content.toSuggestion()
         } catch {
-            print("Apple AI error:", error)
+            print("Apple AI structured generation error:", error)
             return nil
         }
     }
@@ -37,19 +47,23 @@ enum AppleAIBartenderService {
         userIngredients: [Ingredient],
         preferences: UserPreferences
     ) -> String {
-        let ingredients = userIngredients.map { $0.name }.joined(separator: ", ")
-        let favoriteBases = preferences.favoriteBases.joined(separator: ", ")
-        let favoriteFlavors = preferences.favoriteFlavors.joined(separator: ", ")
+        let ingredients = userIngredients
+            .map { $0.name }
+            .joined(separator: ", ")
+
+        let favoriteBases = preferences.favoriteBases
+            .joined(separator: ", ")
+
+        let favoriteFlavors = preferences.favoriteFlavors
+            .joined(separator: ", ")
 
         return """
-        Você é um bartender especialista.
-
         Crie uma receita de drink baseada no pedido abaixo.
 
-        Pedido do usuário:
+        Pedido:
         \(prompt)
 
-        Ingredientes disponíveis:
+        Ingredientes disponíveis no Meu Bar:
         \(ingredients.isEmpty ? "Nenhum ingrediente cadastrado" : ingredients)
 
         Preferências do usuário:
@@ -57,92 +71,77 @@ enum AppleAIBartenderService {
         Sabores favoritos: \(favoriteFlavors.isEmpty ? "Não definido" : favoriteFlavors)
         Teor alcoólico preferido: \(preferences.preferredAlcoholLevel.rawValue)
 
-        IMPORTANTE:
-        - Respeite a base alcoólica solicitada pelo usuário.
-        - Se o usuário pediu Vodka, não use Gin.
-        - Se o usuário pediu Gin, não use Vodka.
-        - Retorne apenas JSON válido.
-        - Não inclua markdown.
-        - Não inclua explicações fora do JSON.
-
-        Formato obrigatório:
-
-        {
-          "name": "Nome do drink",
-          "description": "Descrição curta",
-          "ingredients": [
-            {
-              "name": "Vodka",
-              "amount": 50,
-              "unit": "ml"
-            }
-          ],
-          "instructions": [
-            "Passo 1",
-            "Passo 2"
-          ]
-        }
+        Regras:
+        - Respeite a base alcoólica pedida.
+        - Se o usuário pedir Vodka, use Vodka como ingrediente principal.
+        - Se o usuário pedir Gin, use Gin como ingrediente principal.
+        - Se o usuário pedir Rum, use Rum como ingrediente principal.
+        - Se o usuário pedir Whisky, use Whisky como ingrediente principal.
+        - Se o usuário pedir Tequila, use Tequila como ingrediente principal.
+        - Não substitua a base alcoólica por outra.
+        - Crie apenas uma receita.
+        - Use quantidades realistas.
+        - As instruções devem ser curtas e práticas.
         """
     }
+}
 
-    private static func parseSuggestion(
-        from content: String
-    ) -> AIBartenderSuggestion? {
-        let cleaned = extractJSON(from: content)
+@Generable
+struct AppleAIDrinkRecipe {
+    @Guide(description: "Nome curto e atrativo do drink.")
+    let name: String
 
-        guard let data = cleaned.data(using: .utf8),
-              let dto = try? JSONDecoder().decode(AISuggestionDTO.self, from: data) else {
-            print("Failed to parse Apple AI response:", content)
-            return nil
-        }
+    @Guide(description: "Descrição curta do drink em português.")
+    let description: String
 
-        return AIBartenderSuggestion(
-            name: dto.name,
-            description: dto.description,
-            ingredients: dto.ingredients.map {
+    @Guide(description: "Lista de ingredientes com quantidade e unidade.")
+    let ingredients: [AppleAIIngredient]
+
+    @Guide(description: "Passos curtos de preparo.")
+    let instructions: [String]
+
+    func toSuggestion() -> AIBartenderSuggestion {
+        AIBartenderSuggestion(
+            name: name,
+            description: description,
+            ingredients: ingredients.map {
                 DrinkIngredient(
                     name: $0.name,
                     amount: $0.amount,
-                    unit: mapUnit($0.unit)
+                    unit: $0.unit.toDrinkUnit()
                 )
             },
-            instructions: dto.instructions
+            instructions: instructions
         )
     }
+}
 
-    private static func extractJSON(from text: String) -> String {
-        guard let start = text.firstIndex(of: "{"),
-              let end = text.lastIndex(of: "}") else {
-            return text
-        }
+@Generable
+struct AppleAIIngredient {
+    @Guide(description: "Nome do ingrediente.")
+    let name: String
 
-        return String(text[start...end])
-    }
+    @Guide(description: "Quantidade numérica do ingrediente.")
+    let amount: Double
 
-    private static func mapUnit(_ value: String) -> DrinkUnit {
-        let normalized = value.lowercased()
+    @Guide(description: "Unidade do ingrediente: ml, un ou folhas.")
+    let unit: AppleAIIngredientUnit
+}
 
-        if normalized.contains("ml") {
+@Generable
+enum AppleAIIngredientUnit {
+    case ml
+    case piece
+    case leaf
+
+    func toDrinkUnit() -> DrinkUnit {
+        switch self {
+        case .ml:
             return .ml
-        }
-
-        if normalized.contains("folha") {
+        case .piece:
+            return .piece
+        case .leaf:
             return .leaf
         }
-
-        return .piece
     }
-}
-
-private struct AISuggestionDTO: Decodable {
-    let name: String
-    let description: String
-    let ingredients: [AIIngredientDTO]
-    let instructions: [String]
-}
-
-private struct AIIngredientDTO: Decodable {
-    let name: String
-    let amount: Double
-    let unit: String
 }
