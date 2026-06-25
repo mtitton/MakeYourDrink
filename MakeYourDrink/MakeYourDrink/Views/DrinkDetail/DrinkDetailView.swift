@@ -13,6 +13,12 @@ struct DrinkDetailView: View {
 
     let match: DrinkMatch
 
+    private let partyOptions = [1, 2, 4, 6, 8]
+
+    private var multiplier: Double {
+        Double(servings)
+    }
+
     var body: some View {
         ZStack {
             DrinkColors.background
@@ -37,9 +43,7 @@ struct DrinkDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                ShareLink(
-                    item: shareText
-                ) {
+                ShareLink(item: shareText) {
                     Image(systemName: "square.and.arrow.up")
                         .foregroundStyle(DrinkColors.accent)
                 }
@@ -73,7 +77,7 @@ struct DrinkDetailView: View {
             }
             .font(.caption.weight(.medium))
             .foregroundStyle(DrinkColors.textSecondary)
-            
+
             if let rating = appState.rating(for: match.drink) {
                 HStack(spacing: 4) {
                     ForEach(1...5, id: \.self) { value in
@@ -163,49 +167,41 @@ struct DrinkDetailView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            HStack {
-                Button {
-                    if servings > 1 {
-                        servings -= 1
+            Text("Ajuste a quantidade de pessoas e veja os ingredientes recalculados.")
+                .font(.subheadline)
+                .foregroundStyle(DrinkColors.textSecondary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(partyOptions, id: \.self) { option in
+                        Button {
+                            servings = option
+                        } label: {
+                            Text(option == 1 ? "1 pessoa" : "\(option) pessoas")
+                                .font(.subheadline.weight(.semibold))
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(servings == option ? DrinkColors.accent : DrinkColors.card)
+                                .foregroundStyle(servings == option ? .black : DrinkColors.textPrimary)
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
                     }
-                } label: {
-                    Image(systemName: "minus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(DrinkColors.accent)
-                }
-
-                Spacer()
-
-                Text("\(servings) pessoa\(servings == 1 ? "" : "s")")
-                    .font(.headline)
-                    .foregroundStyle(DrinkColors.textPrimary)
-
-                Spacer()
-
-                Button {
-                    servings += 1
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(DrinkColors.accent)
                 }
             }
-            .padding(18)
-            .background(DrinkColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         }
     }
 
     private var ingredientsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Ingredientes")
+            Text("Ingredientes para \(servings) pessoa\(servings == 1 ? "" : "s")")
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(DrinkColors.textPrimary)
 
             VStack(spacing: 10) {
                 ForEach(match.drink.ingredients, id: \.self) { ingredient in
                     let isAvailable = match.availableIngredients.contains(ingredient.name)
-                    let totalAmount = ingredient.amount * Double(servings)
+                    let totalAmount = scaledAmount(ingredient.amount)
 
                     HStack {
                         Image(systemName: isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
@@ -228,14 +224,6 @@ struct DrinkDetailView: View {
                 }
             }
         }
-    }
-    
-    private func formattedAmount(_ value: Double) -> String {
-        if value.truncatingRemainder(dividingBy: 1) == 0 {
-            return String(Int(value))
-        }
-
-        return String(format: "%.1f", value)
     }
 
     private var prepareButton: some View {
@@ -281,11 +269,11 @@ struct DrinkDetailView: View {
             }
         }
     }
-    
+
     private var shareText: String {
         let ingredients = match.drink.ingredients
             .map {
-                "- \(formattedAmount($0.amount)) \($0.unit.rawValue) \($0.name)"
+                "- \(formattedAmount(scaledAmount($0.amount))) \($0.unit.rawValue) \($0.name)"
             }
             .joined(separator: "\n")
 
@@ -301,7 +289,7 @@ struct DrinkDetailView: View {
 
         \(match.drink.description)
 
-        Ingredientes:
+        Ingredientes para \(servings) pessoa\(servings == 1 ? "" : "s"):
         \(ingredients)
 
         Modo de preparo:
@@ -309,5 +297,17 @@ struct DrinkDetailView: View {
 
         Criado no Make Your Drink.
         """
+    }
+
+    private func scaledAmount(_ amount: Double) -> Double {
+        amount * multiplier
+    }
+
+    private func formattedAmount(_ value: Double) -> String {
+        if value.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(Int(value))
+        }
+
+        return String(format: "%.1f", value)
     }
 }
