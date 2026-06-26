@@ -56,6 +56,8 @@ enum PromptBuilder {
         - Use somente ingredientes permitidos no aplicativo.
         - Respeite obrigatoriamente a base alcoólica solicitada.
         - Se o usuário disser que não pode usar ingredientes que ele não possui, use somente ingredientes do Meu Bar.
+        - Se o usuário pedir frutas vermelhas, use somente ingredientes como Morango ou Frutas vermelhas.
+        - Não trate laranja, limão, abacaxi ou maracujá como frutas vermelhas.
         - Não invente ingredientes.
         - O nome do drink deve refletir ingredientes reais da receita.
         - Não use nomes genéricos como Drink, Mix, Cocktail, AI Drink ou Special.

@@ -168,6 +168,8 @@ struct AIBartenderView: View {
 
             evolutionSection
 
+            chatButton(for: suggestion)
+            
             VStack(alignment: .leading, spacing: 10) {
                 Text("Ingredientes")
                     .font(.headline)
@@ -384,5 +386,39 @@ struct AIBartenderView: View {
                 isLoading = false
             }
         }
+    }
+    
+    private func chatButton(
+        for suggestion: AIBartenderSuggestion
+    ) -> some View {
+        NavigationLink {
+            DrinkChatView(suggestion: suggestion)
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "bubble.left.and.bubble.right.fill")
+                    .font(.title3)
+                    .foregroundStyle(DrinkColors.accent)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Perguntar ao Bartender")
+                        .font(.headline)
+                        .foregroundStyle(DrinkColors.textPrimary)
+
+                    Text("Tire dúvidas sobre substituições, preparo e variações.")
+                        .font(.caption)
+                        .foregroundStyle(DrinkColors.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+            .padding(16)
+            .background(DrinkColors.cardSecondary)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 }

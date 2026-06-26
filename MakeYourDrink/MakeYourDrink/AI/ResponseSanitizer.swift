@@ -48,10 +48,16 @@ enum ResponseSanitizer {
         let finalIngredients = cleanedIngredients.isEmpty
             ? fallbackIngredients(prompt: prompt, userIngredients: userIngredients)
             : cleanedIngredients
+        
+        let adjustedIngredients = enforceRequestedFruit(
+            ingredients: finalIngredients,
+            prompt: prompt,
+            userIngredients: userIngredients
+        )
 
         let finalName = CocktailNamingService.bestName(
             aiName: suggestion.name,
-            ingredients: finalIngredients
+            ingredients: adjustedIngredients
         )
 
         return AIBartenderSuggestion(
@@ -60,6 +66,51 @@ enum ResponseSanitizer {
             ingredients: finalIngredients,
             instructions: suggestion.instructions
         )
+    }
+    
+    private static func enforceRequestedFruit(
+        ingredients: [DrinkIngredient],
+        prompt: String,
+        userIngredients: [Ingredient]
+    ) -> [DrinkIngredient] {
+        let text = normalize(prompt)
+
+        let requestedBerries =
+        text.contains("frutas vermelhas") ||
+        text.contains("morango") ||
+        text.contains("berry") ||
+        text.contains("berries")
+
+        guard requestedBerries else {
+            return ingredients
+        }
+
+        let hasRedFruit = ingredients.contains {
+            let name = normalize($0.name)
+            return name.contains("morango") ||
+            name.contains("frutas vermelhas")
+        }
+
+        if hasRedFruit {
+            return ingredients
+        }
+
+        let withoutWrongFruits = ingredients.filter {
+            let name = normalize($0.name)
+
+            return !name.contains("laranja") &&
+            !name.contains("limao") &&
+            !name.contains("maracuja") &&
+            !name.contains("abacaxi")
+        }
+
+        return withoutWrongFruits + [
+            DrinkIngredient(
+                name: "Morango",
+                amount: 4,
+                unit: .piece
+            )
+        ]
     }
 
     private static func sanitizeIngredient(
