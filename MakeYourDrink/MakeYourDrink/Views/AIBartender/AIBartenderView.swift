@@ -18,6 +18,15 @@ struct AIBartenderView: View {
     @State private var recipeVersions: [AIRecipeVersion] = []
     @State private var selectedVersionIndex = 0
     @State private var evolvingOption: AIRecipeEvolution?
+    @State private var loadingMessageIndex = 0
+    
+    private let loadingMessages = [
+        "Analisando seu bar...",
+        "Equilibrando sabores...",
+        "Criando uma receita autoral...",
+        "Validando ingredientes...",
+        "Finalizando seu drink..."
+    ]
 
     var body: some View {
         NavigationStack {
@@ -32,9 +41,7 @@ struct AIBartenderView: View {
                         createButton
 
                         if isLoading {
-                            ProgressView("Criando drink...")
-                                .tint(DrinkColors.accent)
-                                .foregroundStyle(DrinkColors.textPrimary)
+                            aiLoadingView
                         }
 
                         if let currentSuggestion {
@@ -213,9 +220,11 @@ struct AIBartenderView: View {
 
     private func createDrink() {
         isPromptFocused = false
-        isLoading = true
         suggestion = nil
         recipeMatch = nil
+        isLoading = true
+        
+        startLoadingMessages()
 
         Task {
             let appleResult = await AppleAIBartenderService.createSuggestion(
@@ -353,6 +362,8 @@ struct AIBartenderView: View {
         guard let currentSuggestion else { return }
 
         isLoading = true
+        startLoadingMessages()
+        
         evolvingOption = option
 
         Task {
@@ -420,5 +431,43 @@ struct AIBartenderView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)
+    }
+    
+    private var aiLoadingView: some View {
+        HStack(spacing: 14) {
+            ProgressView()
+                .tint(DrinkColors.accent)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(loadingMessages[loadingMessageIndex])
+                    .font(.headline)
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Text("O Bartender está preparando algo especial.")
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+
+            Spacer()
+        }
+        .padding(18)
+        .background(DrinkColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+    
+    private func startLoadingMessages() {
+        loadingMessageIndex = 0
+
+        Task {
+            while isLoading {
+                try? await Task.sleep(nanoseconds: 900_000_000)
+
+                await MainActor.run {
+                    guard isLoading else { return }
+
+                    loadingMessageIndex = (loadingMessageIndex + 1) % loadingMessages.count
+                }
+            }
+        }
     }
 }
