@@ -15,6 +15,9 @@ struct AIBartenderView: View {
     @State private var isLoading = false
     @State private var suggestion: AIBartenderSuggestion?
     @State private var recipeMatch: AIRecipeMatch?
+    @State private var recipeVersions: [AIRecipeVersion] = []
+    @State private var selectedVersionIndex = 0
+    @State private var evolvingOption: AIRecipeEvolution?
 
     var body: some View {
         NavigationStack {
@@ -34,8 +37,8 @@ struct AIBartenderView: View {
                                 .foregroundStyle(DrinkColors.textPrimary)
                         }
 
-                        if let suggestion {
-                            suggestionCard(suggestion)
+                        if let currentSuggestion {
+                            suggestionCard(currentSuggestion)
                         }
                     }
                     .padding(20)
@@ -157,9 +160,13 @@ struct AIBartenderView: View {
                 .font(.subheadline)
                 .foregroundStyle(DrinkColors.textSecondary)
             
-            if let recipeMatch {
-                AIRecipeMatchCard(match: recipeMatch)
+            if let currentMatch {
+                AIRecipeMatchCard(match: currentMatch)
             }
+
+            versionControl
+
+            evolutionSection
 
             VStack(alignment: .leading, spacing: 10) {
                 Text("Ingredientes")
@@ -229,11 +236,20 @@ struct AIBartenderView: View {
             }
 
             await MainActor.run {
-                suggestion = finalResult
-                recipeMatch = AIRecipeMatcher.match(
+                let recipeMatch = AIRecipeMatcher.match(
                     suggestion: finalResult,
                     userIngredients: appState.userIngredients
                 )
+
+                let version = AIRecipeVersion(
+                    suggestion: finalResult,
+                    match: recipeMatch
+                )
+
+                recipeVersions = [version]
+                selectedVersionIndex = 0
+                suggestion = finalResult
+                self.recipeMatch = recipeMatch
                 isLoading = false
             }
         }
@@ -243,5 +259,130 @@ struct AIBartenderView: View {
         value.truncatingRemainder(dividingBy: 1) == 0
             ? String(Int(value))
             : String(format: "%.1f", value)
+    }
+    
+    private var selectedVersion: AIRecipeVersion? {
+        guard recipeVersions.indices.contains(selectedVersionIndex) else {
+            return nil
+        }
+
+        return recipeVersions[selectedVersionIndex]
+    }
+
+    private var currentSuggestion: AIBartenderSuggestion? {
+        selectedVersion?.suggestion
+    }
+
+    private var currentMatch: AIRecipeMatch? {
+        selectedVersion?.match
+    }
+    
+    private var versionControl: some View {
+        Group {
+            if recipeVersions.count > 1 {
+                HStack {
+                    Button {
+                        if selectedVersionIndex > 0 {
+                            selectedVersionIndex -= 1
+                            HapticService.light()
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left.circle.fill")
+                    }
+                    .disabled(selectedVersionIndex == 0)
+
+                    Spacer()
+
+                    Text("Receita \(selectedVersionIndex + 1) de \(recipeVersions.count)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(DrinkColors.textSecondary)
+
+                    Spacer()
+
+                    Button {
+                        if selectedVersionIndex < recipeVersions.count - 1 {
+                            selectedVersionIndex += 1
+                            HapticService.light()
+                        }
+                    } label: {
+                        Image(systemName: "chevron.right.circle.fill")
+                    }
+                    .disabled(selectedVersionIndex == recipeVersions.count - 1)
+                }
+                .font(.title3)
+                .foregroundStyle(DrinkColors.accent)
+            }
+        }
+    }
+
+    private var evolutionSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("✨ Evoluir receita")
+                .font(.headline)
+                .foregroundStyle(DrinkColors.textPrimary)
+
+            FlowLayout(spacing: 10) {
+                ForEach(AIRecipeEvolution.allCases) { option in
+                    Button {
+                        evolveRecipe(option)
+                    } label: {
+                        Text("\(option.emoji) \(option.title)")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(DrinkColors.accent)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isLoading)
+                }
+            }
+
+            if let evolvingOption {
+                Text("Reinventando: \(evolvingOption.emoji) \(evolvingOption.title)...")
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+        }
+    }
+    
+    private func evolveRecipe(_ option: AIRecipeEvolution) {
+        guard let currentSuggestion else { return }
+
+        isLoading = true
+        evolvingOption = option
+
+        Task {
+            let evolved = await AppleAIBartenderService.evolveRecipe(
+                currentSuggestion: currentSuggestion,
+                evolution: option,
+                appState: appState
+            )
+
+            await MainActor.run {
+                if let evolved {
+                    let recipeMatch = AIRecipeMatcher.match(
+                        suggestion: evolved,
+                        userIngredients: appState.userIngredients
+                    )
+
+                    let version = AIRecipeVersion(
+                        suggestion: evolved,
+                        match: recipeMatch,
+                        evolution: option
+                    )
+
+                    recipeVersions.append(version)
+                    selectedVersionIndex = recipeVersions.count - 1
+                    suggestion = evolved
+                    self.recipeMatch = recipeMatch
+                    HapticService.success()
+                }
+
+                evolvingOption = nil
+                isLoading = false
+            }
+        }
     }
 }

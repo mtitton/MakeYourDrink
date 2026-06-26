@@ -328,6 +328,51 @@ enum AppleAIBartenderService {
 
         return true
     }
+    
+    static func evolveRecipe(
+        currentSuggestion: AIBartenderSuggestion,
+        evolution: AIRecipeEvolution,
+        appState: AppState
+    ) async -> AIBartenderSuggestion? {
+        let ingredients = currentSuggestion.ingredients
+            .map {
+                "- \($0.amount) \($0.unit.rawValue) \($0.name)"
+            }
+            .joined(separator: "\n")
+
+        let instructions = currentSuggestion.instructions
+            .enumerated()
+            .map {
+                "\($0.offset + 1). \($0.element)"
+            }
+            .joined(separator: "\n")
+
+        let prompt = """
+        Evolua a receita abaixo.
+
+        Receita atual:
+        Nome: \(currentSuggestion.name)
+        Descrição: \(currentSuggestion.description)
+
+        Ingredientes:
+        \(ingredients)
+
+        Preparo:
+        \(instructions)
+
+        Evolução desejada:
+        \(evolution.instruction)
+
+        Mantenha a essência da receita, mas crie uma nova versão.
+        """
+
+        return await createSuggestion(
+            prompt: prompt,
+            userIngredients: appState.userIngredients,
+            preferences: appState.preferences,
+            appState: appState
+        )
+    }
 }
 
 @Generable
