@@ -14,6 +14,10 @@ struct ShoppingListView: View {
         ShoppingListService.suggestions(matches: appState.matches)
     }
 
+    private var hasContent: Bool {
+        !appState.shoppingListItems.isEmpty || !suggestions.isEmpty
+    }
+
     var body: some View {
         ZStack {
             DrinkColors.background
@@ -23,10 +27,16 @@ struct ShoppingListView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     header
 
-                    if suggestions.isEmpty {
-                        emptyState
+                    if hasContent {
+                        if !appState.shoppingListItems.isEmpty {
+                            manualListSection
+                        }
+
+                        if !suggestions.isEmpty {
+                            suggestionsSection
+                        }
                     } else {
-                        suggestionsSection
+                        emptyState
                     }
                 }
                 .padding(20)
@@ -42,43 +52,131 @@ struct ShoppingListView: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            Text("Veja quais ingredientes desbloqueiam mais receitas.")
+            Text("Organize ingredientes faltantes e veja o que desbloqueia mais receitas.")
                 .font(.subheadline)
                 .foregroundStyle(DrinkColors.textSecondary)
         }
     }
 
+    private var manualListSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("Minha lista")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Spacer()
+
+                Text("\(appState.shoppingListItems.count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+
+            VStack(spacing: 10) {
+                ForEach(appState.shoppingListItems) { item in
+                    manualItemRow(item)
+                }
+            }
+        }
+    }
+
+    private func manualItemRow(_ item: ShoppingListItem) -> some View {
+        Button {
+            appState.toggleShoppingListItem(item)
+            HapticService.light()
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(item.isChecked ? DrinkColors.success : DrinkColors.accent)
+
+                Text(item.name)
+                    .font(.headline)
+                    .foregroundStyle(item.isChecked ? DrinkColors.textSecondary : DrinkColors.textPrimary)
+                    .strikethrough(item.isChecked)
+
+                Spacer()
+
+                Image(systemName: "trash")
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+                    .onTapGesture {
+                        appState.removeShoppingListItem(item)
+                        HapticService.medium()
+                    }
+            }
+            .padding(16)
+            .background(DrinkColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button {
+                appState.toggleShoppingListItem(item)
+                HapticService.light()
+            } label: {
+                Label(
+                    item.isChecked ? "Marcar como pendente" : "Marcar como comprado",
+                    systemImage: item.isChecked ? "circle" : "checkmark.circle"
+                )
+            }
+
+            Button(role: .destructive) {
+                appState.removeShoppingListItem(item)
+                HapticService.medium()
+            } label: {
+                Label("Remover", systemImage: "trash")
+            }
+        }
+    }
+
     private var suggestionsSection: some View {
-        VStack(spacing: 12) {
-            ForEach(suggestions) { suggestion in
-                NavigationLink {
-                    ShoppingIngredientDetailView(suggestion: suggestion)
-                } label: {
-                    HStack(spacing: 14) {
-                        Image(systemName: "cart.fill")
-                            .foregroundStyle(DrinkColors.accent)
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Sugestões inteligentes")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(DrinkColors.textPrimary)
 
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(suggestion.ingredientName)
-                                .font(.headline)
-                                .foregroundStyle(DrinkColors.textPrimary)
+            VStack(spacing: 12) {
+                ForEach(suggestions) { suggestion in
+                    NavigationLink {
+                        ShoppingIngredientDetailView(suggestion: suggestion)
+                    } label: {
+                        HStack(spacing: 14) {
+                            Image(systemName: "cart.fill")
+                                .foregroundStyle(DrinkColors.accent)
 
-                            Text("Desbloqueia \(suggestion.unlockCount) drink\(suggestion.unlockCount == 1 ? "" : "s")")
-                                .font(.subheadline)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(suggestion.ingredientName)
+                                    .font(.headline)
+                                    .foregroundStyle(DrinkColors.textPrimary)
+
+                                Text("Desbloqueia \(suggestion.unlockCount) drink\(suggestion.unlockCount == 1 ? "" : "s")")
+                                    .font(.subheadline)
+                                    .foregroundStyle(DrinkColors.textSecondary)
+                            }
+
+                            Spacer()
+
+                            Button {
+                                appState.addToShoppingList(suggestion.ingredientName)
+                                HapticService.success()
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title3)
+                                    .foregroundStyle(DrinkColors.accent)
+                            }
+                            .buttonStyle(.plain)
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
                                 .foregroundStyle(DrinkColors.textSecondary)
                         }
-
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(DrinkColors.textSecondary)
+                        .padding(16)
+                        .background(DrinkColors.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     }
-                    .padding(16)
-                    .background(DrinkColors.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
     }

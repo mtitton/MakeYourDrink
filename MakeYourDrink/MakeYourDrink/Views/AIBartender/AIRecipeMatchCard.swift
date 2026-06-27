@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct AIRecipeMatchCard: View {
+    @EnvironmentObject private var appState: AppState
+    
     let match: AIRecipeMatch
 
     var body: some View {
@@ -43,12 +45,20 @@ struct AIRecipeMatchCard: View {
             }
 
             if !match.missingIngredients.isEmpty {
-                ingredientList(
-                    title: "Falta comprar",
-                    icon: "xmark.circle.fill",
-                    color: DrinkColors.danger,
-                    ingredients: match.missingIngredients
-                )
+                Button {
+                    appState.addToShoppingList(
+                        match.missingIngredients.map { $0.name }
+                    )
+                    HapticService.success()
+                } label: {
+                    Text("Adicionar faltantes à lista")
+                        .font(.headline)
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(DrinkColors.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
             }
         }
         .padding(18)

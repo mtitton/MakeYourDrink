@@ -45,6 +45,12 @@ final class AppState: ObservableObject {
             LocalStorageService.saveDrinkRatings(drinkRatings)
         }
     }
+    
+    @Published var shoppingListItems: [ShoppingListItem] {
+        didSet {
+            LocalStorageService.saveShoppingListItems(shoppingListItems)
+        }
+    }
 
     init() {
         self.userIngredients = LocalStorageService.loadUserIngredients() ?? MockData.userBar
@@ -53,6 +59,7 @@ final class AppState: ObservableObject {
         self.savedAISuggestions = LocalStorageService.loadAISuggestions()
         self.drinkHistory = LocalStorageService.loadDrinkHistory()
         self.drinkRatings = LocalStorageService.loadDrinkRatings()
+        self.shoppingListItems = LocalStorageService.loadShoppingListItems()
     }
 
     var matches: [DrinkMatch] {
@@ -124,5 +131,37 @@ final class AppState: ObservableObject {
 
     func rating(for drink: Drink) -> Int? {
         drinkRatings.first { $0.drinkID == drink.id }?.rating
+    }
+    
+    func addToShoppingList(_ ingredientName: String) {
+        let alreadyExists = shoppingListItems.contains {
+            $0.name.localizedCaseInsensitiveCompare(ingredientName) == .orderedSame
+        }
+
+        guard !alreadyExists else { return }
+
+        shoppingListItems.append(
+            ShoppingListItem(name: ingredientName)
+        )
+    }
+
+    func addToShoppingList(_ ingredientNames: [String]) {
+        ingredientNames.forEach {
+            addToShoppingList($0)
+        }
+    }
+
+    func toggleShoppingListItem(_ item: ShoppingListItem) {
+        guard let index = shoppingListItems.firstIndex(where: { $0.id == item.id }) else {
+            return
+        }
+
+        shoppingListItems[index].isChecked.toggle()
+    }
+
+    func removeShoppingListItem(_ item: ShoppingListItem) {
+        shoppingListItems.removeAll {
+            $0.id == item.id
+        }
     }
 }
