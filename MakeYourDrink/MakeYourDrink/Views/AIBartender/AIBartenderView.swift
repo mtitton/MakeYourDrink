@@ -170,6 +170,10 @@ struct AIBartenderView: View {
             if let currentMatch {
                 AIRecipeMatchCard(match: currentMatch)
             }
+            
+            RecipeMetadataCard(
+                metadata: RecipeMetadataBuilder.build(for: suggestion)
+            )
 
             versionControl
 

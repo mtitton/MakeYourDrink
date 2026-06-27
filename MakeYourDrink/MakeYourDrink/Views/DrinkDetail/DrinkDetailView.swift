@@ -29,6 +29,9 @@ struct DrinkDetailView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     header
                     matchSection
+                    RecipeMetadataCard(
+                        metadata: RecipeMetadataBuilder.build(for: match.drink)
+                    )
                     chatButton
                     availabilitySection
                     partyModeSection
