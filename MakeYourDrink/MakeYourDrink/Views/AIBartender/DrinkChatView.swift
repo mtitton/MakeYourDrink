@@ -31,28 +31,32 @@ struct DrinkChatView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                header
+                FadeInView(delay: 0.00) {
+                    header
+                }
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 14) {
-                        quickQuestionsSection
+                        FadeInView(delay: 0.05) {
+                            quickQuestionsSection
+                        }
 
-                        ForEach(messages) { message in
-                            messageBubble(message)
+                        if messages.isEmpty {
+                            FadeInView(delay: 0.10) {
+                                emptyConversationCard
+                            }
+                        }
+
+                        ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
+                            FadeInView(delay: Double(index) * 0.03) {
+                                messageBubble(message)
+                            }
                         }
 
                         if isLoading {
-                            HStack {
-                                ProgressView()
-                                    .tint(DrinkColors.accent)
-
-                                Text("Bartender pensando...")
-                                    .font(.caption)
-                                    .foregroundStyle(DrinkColors.textSecondary)
-
-                                Spacer()
+                            FadeInView(delay: 0.00) {
+                                loadingBubble
                             }
-                            .padding(.horizontal, 20)
                         }
                     }
                     .padding(.vertical, 16)
@@ -66,18 +70,44 @@ struct DrinkChatView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(suggestion.name)
-                .font(.title2.bold())
-                .foregroundStyle(DrinkColors.textPrimary)
+        PremiumCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 12) {
+                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                        .font(.title3)
+                        .foregroundStyle(DrinkColors.accent)
 
-            Text("Faça perguntas sobre substituições, preparo, variações e harmonização.")
-                .font(.subheadline)
-                .foregroundStyle(DrinkColors.textSecondary)
+                    Text(suggestion.name)
+                        .font(.title2.bold())
+                        .foregroundStyle(DrinkColors.textPrimary)
+
+                    Spacer()
+                }
+
+                Text("Faça perguntas sobre substituições, preparo, variações e harmonização.")
+                    .font(.subheadline)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DrinkColors.card)
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .scaleOnAppear()
+    }
+
+    private var emptyConversationCard: some View {
+        PremiumCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Seu bartender está pronto")
+                    .font(.headline)
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Text("Pergunte como adaptar o drink, trocar ingredientes, servir mais pessoas ou harmonizar com comida.")
+                    .font(.subheadline)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 20)
     }
 
     private var quickQuestionsSection: some View {
@@ -95,7 +125,7 @@ struct DrinkChatView: View {
                             .background(DrinkColors.accent)
                             .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PremiumButtonStyle())
                     .disabled(isLoading)
                 }
             }
@@ -107,9 +137,9 @@ struct DrinkChatView: View {
         HStack {
             if message.role == .bartender {
                 bubble(message)
-                Spacer(minLength: 40)
+                Spacer(minLength: 44)
             } else {
-                Spacer(minLength: 40)
+                Spacer(minLength: 44)
                 bubble(message)
             }
         }
@@ -119,6 +149,7 @@ struct DrinkChatView: View {
     private func bubble(_ message: DrinkChatMessage) -> some View {
         Text(message.text)
             .font(.subheadline)
+            .lineSpacing(3)
             .foregroundStyle(
                 message.role == .user
                 ? .black
@@ -130,7 +161,36 @@ struct DrinkChatView: View {
                 ? DrinkColors.accent
                 : DrinkColors.card
             )
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(
+                        message.role == .user
+                        ? Color.clear
+                        : Color.white.opacity(0.05),
+                        lineWidth: 1
+                    )
+            }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .scaleOnAppear()
+    }
+
+    private var loadingBubble: some View {
+        HStack {
+            HStack(spacing: 10) {
+                ProgressView()
+                    .tint(DrinkColors.accent)
+
+                Text("Bartender pensando...")
+                    .font(.caption)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+            .padding(14)
+            .background(DrinkColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+            Spacer(minLength: 44)
+        }
+        .padding(.horizontal, 20)
     }
 
     private var inputBar: some View {
@@ -139,6 +199,10 @@ struct DrinkChatView: View {
                 .foregroundStyle(DrinkColors.textPrimary)
                 .padding(14)
                 .background(DrinkColors.card)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.05), lineWidth: 1)
+                }
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             Button {
@@ -153,9 +217,10 @@ struct DrinkChatView: View {
                     )
             }
             .disabled(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
+            .buttonStyle(PremiumButtonStyle())
         }
         .padding(16)
-        .background(DrinkColors.background)
+        .background(.ultraThinMaterial)
     }
 
     private func send(_ text: String) {
@@ -171,8 +236,10 @@ struct DrinkChatView: View {
             text: trimmed
         )
 
-        messages.append(userMessage)
-        isLoading = true
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            messages.append(userMessage)
+            isLoading = true
+        }
 
         Task {
             let answer = await DrinkChatService.ask(
@@ -183,14 +250,17 @@ struct DrinkChatView: View {
             )
 
             await MainActor.run {
-                messages.append(
-                    DrinkChatMessage(
-                        role: .bartender,
-                        text: answer
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                    messages.append(
+                        DrinkChatMessage(
+                            role: .bartender,
+                            text: answer
+                        )
                     )
-                )
 
-                isLoading = false
+                    isLoading = false
+                }
+
                 HapticService.success()
             }
         }
