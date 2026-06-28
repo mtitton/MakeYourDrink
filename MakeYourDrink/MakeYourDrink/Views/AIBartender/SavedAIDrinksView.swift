@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SavedAIDrinksView: View {
-
     @EnvironmentObject private var appState: AppState
 
     var body: some View {
@@ -17,21 +16,24 @@ struct SavedAIDrinksView: View {
                 .ignoresSafeArea()
 
             if appState.savedAISuggestions.isEmpty {
-                emptyState
+                FadeInView(delay: 0.00) {
+                    emptyState
+                }
+                .padding(20)
             } else {
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 16) {
-
-                        ForEach(appState.savedAISuggestions) { drink in
-
-                            NavigationLink {
-                                SavedAIDrinkDetailView(
-                                    suggestion: drink
-                                )
-                            } label: {
-                                drinkCard(drink)
+                        ForEach(Array(appState.savedAISuggestions.enumerated()), id: \.element.id) { index, drink in
+                            FadeInView(delay: Double(index) * 0.04) {
+                                NavigationLink {
+                                    SavedAIDrinkDetailView(
+                                        suggestion: drink
+                                    )
+                                } label: {
+                                    drinkCard(drink)
+                                }
+                                .buttonStyle(PremiumButtonStyle())
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(20)
@@ -45,64 +47,59 @@ struct SavedAIDrinksView: View {
     private func drinkCard(
         _ drink: AIBartenderSuggestion
     ) -> some View {
+        PremiumCard {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 12) {
+                    Image(systemName: "sparkles")
+                        .foregroundStyle(DrinkColors.accent)
+                        .symbolEffect(.pulse)
 
-        VStack(alignment: .leading, spacing: 10) {
+                    Text(drink.name)
+                        .font(.headline)
+                        .foregroundStyle(DrinkColors.textPrimary)
 
-            HStack {
-                Image(systemName: "sparkles")
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(DrinkColors.textSecondary)
+                }
+
+                Text(drink.description)
+                    .font(.subheadline)
+                    .foregroundStyle(DrinkColors.textSecondary)
+                    .lineLimit(3)
+
+                Text("\(drink.ingredients.count) ingrediente\(drink.ingredients.count == 1 ? "" : "s")")
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(DrinkColors.accent)
-
-                Text(drink.name)
-                    .font(.headline)
-                    .foregroundStyle(
-                        DrinkColors.textPrimary
-                    )
-
-                Spacer()
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(DrinkColors.cardSecondary)
+                    .clipShape(Capsule())
             }
-
-            Text(drink.description)
-                .font(.subheadline)
-                .foregroundStyle(
-                    DrinkColors.textSecondary
-                )
         }
-        .padding(18)
-        .background(
-            DrinkColors.card
-        )
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: 22,
-                style: .continuous
-            )
-        )
+        .scaleOnAppear()
     }
 
     private var emptyState: some View {
+        PremiumCard {
+            VStack(spacing: 18) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 52))
+                    .foregroundStyle(DrinkColors.accent)
+                    .symbolEffect(.pulse)
 
-        VStack(spacing: 18) {
+                Text("Nenhum drink criado ainda")
+                    .font(.title3.bold())
+                    .foregroundStyle(DrinkColors.textPrimary)
 
-            Image(systemName: "sparkles")
-                .font(.system(size: 52))
-                .foregroundStyle(
-                    DrinkColors.accent
-                )
-
-            Text("Nenhum drink criado ainda")
-                .font(.title3.bold())
-                .foregroundStyle(
-                    DrinkColors.textPrimary
-                )
-
-            Text(
-                "Use a IA Bartender para criar receitas personalizadas."
-            )
-            .multilineTextAlignment(.center)
-            .foregroundStyle(
-                DrinkColors.textSecondary
-            )
+                Text("Use a IA Bartender para criar receitas personalizadas.")
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(DrinkColors.textSecondary)
+            }
+            .frame(maxWidth: .infinity)
         }
-        .padding(32)
+        .scaleOnAppear()
     }
 }
