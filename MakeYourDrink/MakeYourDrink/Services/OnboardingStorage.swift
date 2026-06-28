@@ -8,8 +8,7 @@
 import Foundation
 
 enum OnboardingStorage {
-
-    private static let key = "has_seen_onboarding"
+    private static let key = "make_your_drink_has_seen_onboarding"
 
     static var hasSeenOnboarding: Bool {
         UserDefaults.standard.bool(forKey: key)
@@ -17,5 +16,9 @@ enum OnboardingStorage {
 
     static func complete() {
         UserDefaults.standard.set(true, forKey: key)
+    }
+
+    static func reset() {
+        UserDefaults.standard.set(false, forKey: key)
     }
 }

@@ -19,28 +19,32 @@ struct OnboardingView: View {
 
     private let pages: [OnboardingPage] = [
         .init(
-            image: "wineglass.fill",
-            title: "Transforme ingredientes em drinks",
-            subtitle: "Descubra receitas incríveis com o que você já tem em casa."
+            icon: "wineglass.fill",
+            title: "Seu bartender pessoal",
+            subtitle: "Descubra drinks com base nos ingredientes que você já tem em casa."
         ),
         .init(
-            image: "camera.viewfinder",
-            title: "Escaneie, escreva ou selecione",
-            subtitle: "Adicione ingredientes da forma mais conveniente para você."
+            icon: "shippingbox.fill",
+            title: "Monte seu bar",
+            subtitle: "Adicione seus ingredientes e veja automaticamente o que você pode preparar."
         ),
         .init(
-            image: "sparkles",
+            icon: "wand.and.sparkles",
             title: "Personalize sua experiência",
-            subtitle: "Escolha alguns gostos para melhorar suas recomendações."
+            subtitle: "Escolha seus gostos para melhorar as recomendações da IA."
         )
     ]
+
+    private var isLastPage: Bool {
+        currentPage == pages.count - 1
+    }
 
     var body: some View {
         ZStack {
             DrinkColors.background
                 .ignoresSafeArea()
 
-            VStack {
+            VStack(spacing: 20) {
                 TabView(selection: $currentPage) {
                     ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
                         if index == pages.count - 1 {
@@ -52,26 +56,13 @@ struct OnboardingView: View {
                         }
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
+                .tabViewStyle(.page(indexDisplayMode: .never))
 
-                Button {
-                    if currentPage < pages.count - 1 {
-                        currentPage += 1
-                    } else {
-                        savePreferences()
-                        onFinish()
-                    }
-                } label: {
-                    Text(currentPage == pages.count - 1 ? "Começar" : "Próximo")
-                        .font(.headline)
-                        .foregroundStyle(.black)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(DrinkColors.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 40)
+                pageIndicator
+
+                actionButton
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 28)
             }
         }
     }
@@ -80,33 +71,51 @@ struct OnboardingView: View {
         VStack(spacing: 30) {
             Spacer()
 
-            Image(systemName: page.image)
-                .font(.system(size: 80))
-                .foregroundStyle(DrinkColors.accent)
+            ZStack {
+                Circle()
+                    .fill(DrinkColors.cardSecondary)
+                    .frame(width: 150, height: 150)
 
-            Text(page.title)
-                .font(.largeTitle.bold())
-                .foregroundStyle(DrinkColors.textPrimary)
-                .multilineTextAlignment(.center)
+                Image(systemName: page.icon)
+                    .font(.system(size: 62, weight: .semibold))
+                    .foregroundStyle(DrinkColors.accent)
+                    .symbolEffect(.pulse)
+            }
+            .scaleOnAppear()
 
-            Text(page.subtitle)
-                .font(.title3)
-                .foregroundStyle(DrinkColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+            VStack(spacing: 12) {
+                Text(page.title)
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(DrinkColors.textPrimary)
+                    .multilineTextAlignment(.center)
+
+                Text(page.subtitle)
+                    .font(.body)
+                    .foregroundStyle(DrinkColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.horizontal, 28)
+            }
 
             Spacer()
         }
-        .padding()
+        .padding(20)
     }
 
     private func preferencesPage(_ page: OnboardingPage) -> some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(spacing: 20) {
-                    Image(systemName: page.image)
-                        .font(.system(size: 64))
-                        .foregroundStyle(DrinkColors.accent)
+                    ZStack {
+                        Circle()
+                            .fill(DrinkColors.cardSecondary)
+                            .frame(width: 120, height: 120)
+
+                        Image(systemName: page.icon)
+                            .font(.system(size: 48, weight: .semibold))
+                            .foregroundStyle(DrinkColors.accent)
+                            .symbolEffect(.pulse)
+                    }
 
                     Text(page.title)
                         .font(.largeTitle.bold())
@@ -117,25 +126,32 @@ struct OnboardingView: View {
                         .font(.body)
                         .foregroundStyle(DrinkColors.textSecondary)
                         .multilineTextAlignment(.center)
+                        .lineSpacing(4)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.top, 40)
+                .padding(.top, 28)
 
-                preferenceSection(
-                    title: "Bases favoritas",
-                    options: ["Gin", "Vodka", "Rum", "Cachaça", "Whisky", "Tequila"],
-                    selection: $selectedBases
-                )
+                PremiumCard {
+                    preferenceSection(
+                        title: "Bases favoritas",
+                        options: ["Gin", "Vodka", "Rum", "Cachaça", "Whisky", "Tequila"],
+                        selection: $selectedBases
+                    )
+                }
 
-                preferenceSection(
-                    title: "Sabores favoritos",
-                    options: ["Cítrico", "Doce", "Refrescante", "Frutado", "Amargo"],
-                    selection: $selectedFlavors
-                )
+                PremiumCard {
+                    preferenceSection(
+                        title: "Sabores favoritos",
+                        options: ["Cítrico", "Doce", "Refrescante", "Frutado", "Amargo"],
+                        selection: $selectedFlavors
+                    )
+                }
 
-                alcoholLevelSection
+                PremiumCard {
+                    alcoholLevelSection
+                }
 
-                Spacer(minLength: 80)
+                Spacer(minLength: 90)
             }
             .padding(20)
         }
@@ -146,7 +162,7 @@ struct OnboardingView: View {
         options: [String],
         selection: Binding<Set<String>>
     ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text(title)
                 .font(.headline)
                 .foregroundStyle(DrinkColors.textPrimary)
@@ -156,28 +172,32 @@ struct OnboardingView: View {
                     let isSelected = selection.wrappedValue.contains(option)
 
                     Button {
-                        if isSelected {
-                            selection.wrappedValue.remove(option)
-                        } else {
-                            selection.wrappedValue.insert(option)
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.82)) {
+                            if isSelected {
+                                selection.wrappedValue.remove(option)
+                            } else {
+                                selection.wrappedValue.insert(option)
+                            }
                         }
+
+                        HapticService.light()
                     } label: {
                         Text(option)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(isSelected ? .black : DrinkColors.textPrimary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 9)
-                            .background(isSelected ? DrinkColors.accent : DrinkColors.card)
+                            .background(isSelected ? DrinkColors.accent : DrinkColors.cardSecondary)
                             .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PremiumButtonStyle())
                 }
             }
         }
     }
 
     private var alcoholLevelSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Teor alcoólico preferido")
                 .font(.headline)
                 .foregroundStyle(DrinkColors.textPrimary)
@@ -185,20 +205,60 @@ struct OnboardingView: View {
             HStack(spacing: 10) {
                 ForEach(AlcoholicLevelPreference.allCases) { level in
                     Button {
-                        selectedAlcoholLevel = level
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.82)) {
+                            selectedAlcoholLevel = level
+                        }
+
+                        HapticService.light()
                     } label: {
                         Text(level.rawValue)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(selectedAlcoholLevel == level ? .black : DrinkColors.textPrimary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
-                            .background(selectedAlcoholLevel == level ? DrinkColors.accent : DrinkColors.card)
+                            .background(selectedAlcoholLevel == level ? DrinkColors.accent : DrinkColors.cardSecondary)
                             .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PremiumButtonStyle())
                 }
             }
         }
+    }
+
+    private var pageIndicator: some View {
+        HStack(spacing: 8) {
+            ForEach(pages.indices, id: \.self) { index in
+                Capsule()
+                    .fill(index == currentPage ? DrinkColors.accent : DrinkColors.cardSecondary)
+                    .frame(width: index == currentPage ? 28 : 8, height: 8)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.8), value: currentPage)
+            }
+        }
+    }
+
+    private var actionButton: some View {
+        Button {
+            if isLastPage {
+                savePreferences()
+                HapticService.success()
+                onFinish()
+            } else {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                    currentPage += 1
+                }
+
+                HapticService.light()
+            }
+        } label: {
+            Text(isLastPage ? "Começar" : "Continuar")
+                .font(.headline)
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(DrinkColors.accent)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(PremiumButtonStyle())
     }
 
     private func savePreferences() {
