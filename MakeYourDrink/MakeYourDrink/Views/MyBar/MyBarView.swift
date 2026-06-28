@@ -55,18 +55,33 @@ struct MyBarView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
-                        header
-                        summaryCard
-                        searchField
-
-                        if appState.userIngredients.isEmpty {
-                            emptySelectedState
-                        } else {
-                            selectedSection
+                        FadeInView(delay: 0.00) {
+                            header
                         }
 
-                        allIngredientsSection
-                        insightSection
+                        FadeInView(delay: 0.05) {
+                            summaryCard
+                        }
+
+                        FadeInView(delay: 0.10) {
+                            searchField
+                        }
+
+                        FadeInView(delay: 0.15) {
+                            if appState.userIngredients.isEmpty {
+                                emptySelectedState
+                            } else {
+                                selectedSection
+                            }
+                        }
+
+                        FadeInView(delay: 0.20) {
+                            allIngredientsSection
+                        }
+
+                        FadeInView(delay: 0.25) {
+                            insightSection
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -91,46 +106,38 @@ struct MyBarView: View {
     }
 
     private var summaryCard: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("\(selectedCount) ingredientes")
-                        .font(.title2.bold())
-                        .foregroundStyle(DrinkColors.textPrimary)
+        PremiumCard {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("\(selectedCount) ingredientes")
+                            .font(.title2.bold())
+                            .foregroundStyle(DrinkColors.textPrimary)
 
-                    Text("Você pode preparar \(availableDrinksCount) drink\(availableDrinksCount == 1 ? "" : "s") agora")
-                        .font(.subheadline)
-                        .foregroundStyle(DrinkColors.textSecondary)
+                        Text("Você pode preparar \(availableDrinksCount) drink\(availableDrinksCount == 1 ? "" : "s") agora")
+                            .font(.subheadline)
+                            .foregroundStyle(DrinkColors.textSecondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "shippingbox.fill")
+                        .font(.system(size: 34))
+                        .foregroundStyle(DrinkColors.accent)
+                        .symbolEffect(.pulse, value: selectedCount)
                 }
 
-                Spacer()
+                VStack(alignment: .leading, spacing: 8) {
+                    ProgressView(value: progress)
+                        .tint(DrinkColors.accent)
 
-                Image(systemName: "shippingbox.fill")
-                    .font(.system(size: 34))
-                    .foregroundStyle(DrinkColors.accent)
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                ProgressView(value: progress)
-                    .tint(DrinkColors.accent)
-
-                Text("\(selectedCount) de \(totalCount) ingredientes cadastrados")
-                    .font(.caption)
-                    .foregroundStyle(DrinkColors.textSecondary)
+                    Text("\(selectedCount) de \(totalCount) ingredientes cadastrados")
+                        .font(.caption)
+                        .foregroundStyle(DrinkColors.textSecondary)
+                }
             }
         }
-        .padding(20)
-        .background(
-            LinearGradient(
-                colors: [
-                    DrinkColors.cardSecondary,
-                    DrinkColors.card
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .scaleOnAppear()
     }
 
     private var searchField: some View {
@@ -146,36 +153,42 @@ struct MyBarView: View {
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
+                    HapticService.light()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(DrinkColors.textSecondary)
                 }
+                .buttonStyle(PremiumButtonStyle())
             }
         }
         .padding(16)
         .background(DrinkColors.card)
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.05), lineWidth: 1)
+        }
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private var emptySelectedState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "wineglass")
-                .font(.system(size: 44))
-                .foregroundStyle(DrinkColors.accent)
+        PremiumCard {
+            VStack(spacing: 16) {
+                Image(systemName: "wineglass")
+                    .font(.system(size: 44))
+                    .foregroundStyle(DrinkColors.accent)
 
-            Text("Seu bar está vazio")
-                .font(.title3.bold())
-                .foregroundStyle(DrinkColors.textPrimary)
+                Text("Seu bar está vazio")
+                    .font(.title3.bold())
+                    .foregroundStyle(DrinkColors.textPrimary)
 
-            Text("Adicione ingredientes para desbloquear receitas e recomendações.")
-                .font(.subheadline)
-                .foregroundStyle(DrinkColors.textSecondary)
-                .multilineTextAlignment(.center)
+                Text("Adicione ingredientes para desbloquear receitas e recomendações.")
+                    .font(.subheadline)
+                    .foregroundStyle(DrinkColors.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .background(DrinkColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .scaleOnAppear()
     }
 
     private var selectedSection: some View {
@@ -195,23 +208,27 @@ struct MyBarView: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(DrinkColors.accent)
                 }
+                .buttonStyle(PremiumButtonStyle())
             }
 
             FlowLayout(spacing: 10) {
-                ForEach(appState.userIngredients, id: \.self) { ingredient in
-                    IngredientPill(name: ingredient.name)
-                        .onTapGesture {
-                            appState.toggleIngredient(ingredient)
-                            HapticService.light()
-                        }
-                        .contextMenu {
-                            Button(role: .destructive) {
+                ForEach(Array(appState.userIngredients.enumerated()), id: \.element.id) { index, ingredient in
+                    FadeInView(delay: Double(index) * 0.03) {
+                        IngredientPill(name: ingredient.name)
+                            .scaleOnAppear()
+                            .onTapGesture {
                                 appState.toggleIngredient(ingredient)
-                                HapticService.medium()
-                            } label: {
-                                Label("Remover", systemImage: "trash")
+                                HapticService.light()
                             }
-                        }
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    appState.toggleIngredient(ingredient)
+                                    HapticService.medium()
+                                } label: {
+                                    Label("Remover", systemImage: "trash")
+                                }
+                            }
+                    }
                 }
             }
         }
@@ -252,8 +269,10 @@ struct MyBarView: View {
             }
 
             VStack(spacing: 10) {
-                ForEach(ingredients) { ingredient in
-                    ingredientRow(ingredient)
+                ForEach(Array(ingredients.enumerated()), id: \.element.id) { index, ingredient in
+                    FadeInView(delay: Double(index) * 0.02) {
+                        ingredientRow(ingredient)
+                    }
                 }
             }
         }
@@ -263,7 +282,9 @@ struct MyBarView: View {
         let isSelected = appState.hasIngredient(ingredient)
 
         return Button {
-            appState.toggleIngredient(ingredient)
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                appState.toggleIngredient(ingredient)
+            }
             HapticService.light()
         } label: {
             HStack(spacing: 14) {
@@ -274,6 +295,7 @@ struct MyBarView: View {
                         Image(systemName: isSelected ? "checkmark" : "plus")
                             .font(.caption.bold())
                             .foregroundStyle(isSelected ? .black : DrinkColors.accent)
+                            .symbolEffect(.bounce, value: isSelected)
                     }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -293,9 +315,16 @@ struct MyBarView: View {
             }
             .padding(16)
             .background(DrinkColors.card)
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(
+                        isSelected ? DrinkColors.accent.opacity(0.35) : Color.white.opacity(0.05),
+                        lineWidth: 1
+                    )
+            }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PremiumButtonStyle())
         .contextMenu {
             Button {
                 appState.toggleIngredient(ingredient)
@@ -315,25 +344,25 @@ struct MyBarView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            HStack(spacing: 14) {
-                Image(systemName: "sparkles")
-                    .foregroundStyle(DrinkColors.accent)
+            PremiumCard {
+                HStack(spacing: 14) {
+                    Image(systemName: "sparkles")
+                        .foregroundStyle(DrinkColors.accent)
+                        .symbolEffect(.pulse)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Ingrediente mais útil")
-                        .font(.headline)
-                        .foregroundStyle(DrinkColors.textPrimary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Ingrediente mais útil")
+                            .font(.headline)
+                            .foregroundStyle(DrinkColors.textPrimary)
 
-                    Text(mostUsefulIngredient == "-" ? "Adicione mais ingredientes para gerar insights." : mostUsefulIngredient)
-                        .font(.subheadline)
-                        .foregroundStyle(DrinkColors.textSecondary)
+                        Text(mostUsefulIngredient == "-" ? "Adicione mais ingredientes para gerar insights." : mostUsefulIngredient)
+                            .font(.subheadline)
+                            .foregroundStyle(DrinkColors.textSecondary)
+                    }
+
+                    Spacer()
                 }
-
-                Spacer()
             }
-            .padding(16)
-            .background(DrinkColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
     }
 }
