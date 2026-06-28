@@ -19,7 +19,7 @@ struct AIBartenderView: View {
     @State private var selectedVersionIndex = 0
     @State private var evolvingOption: AIRecipeEvolution?
     @State private var loadingMessageIndex = 0
-    
+
     private let loadingMessages = [
         "Analisando seu bar...",
         "Equilibrando sabores...",
@@ -31,21 +31,37 @@ struct AIBartenderView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                DrinkColors.background.ignoresSafeArea()
+                DrinkColors.background
+                    .ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
-                        header
-                        wizardCard
-                        input
-                        createButton
+                        FadeInView(delay: 0.00) {
+                            header
+                        }
+
+                        FadeInView(delay: 0.05) {
+                            wizardCard
+                        }
+
+                        FadeInView(delay: 0.10) {
+                            input
+                        }
+
+                        FadeInView(delay: 0.15) {
+                            createButton
+                        }
 
                         if isLoading {
-                            aiLoadingView
+                            FadeInView(delay: 0.00) {
+                                aiLoadingView
+                            }
                         }
 
                         if let currentSuggestion {
-                            suggestionCard(currentSuggestion)
+                            FadeInView(delay: 0.10) {
+                                suggestionCard(currentSuggestion)
+                            }
                         }
                     }
                     .padding(20)
@@ -75,41 +91,32 @@ struct AIBartenderView: View {
                 createDrink()
             }
         } label: {
-            HStack(spacing: 14) {
-                Image(systemName: "wand.and.stars")
-                    .font(.title2)
-                    .foregroundStyle(DrinkColors.accent)
+            PremiumCard {
+                HStack(spacing: 14) {
+                    Image(systemName: "wand.and.stars")
+                        .font(.title2)
+                        .foregroundStyle(DrinkColors.accent)
+                        .symbolEffect(.pulse)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Usar Drink Wizard")
-                        .font(.headline)
-                        .foregroundStyle(DrinkColors.textPrimary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Usar Drink Wizard")
+                            .font(.headline)
+                            .foregroundStyle(DrinkColors.textPrimary)
 
-                    Text("Responda algumas perguntas e deixe a IA montar a receita ideal.")
-                        .font(.subheadline)
+                        Text("Responda algumas perguntas e deixe a IA montar a receita ideal.")
+                            .font(.subheadline)
+                            .foregroundStyle(DrinkColors.textSecondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
                         .foregroundStyle(DrinkColors.textSecondary)
                 }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(DrinkColors.textSecondary)
             }
-            .padding(18)
-            .background(
-                LinearGradient(
-                    colors: [
-                        DrinkColors.cardSecondary,
-                        DrinkColors.card
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PremiumButtonStyle())
     }
 
     private var input: some View {
@@ -127,16 +134,24 @@ struct AIBartenderView: View {
             .scrollContentBackground(.hidden)
             .foregroundStyle(DrinkColors.textPrimary)
             .frame(height: 170)
-            .padding(12)
+            .padding(14)
             .background(DrinkColors.card)
+            .overlay {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .strokeBorder(
+                        isPromptFocused ? DrinkColors.accent.opacity(0.65) : Color.white.opacity(0.05),
+                        lineWidth: isPromptFocused ? 1.5 : 1
+                    )
+            }
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .animation(.spring(response: 0.28, dampingFraction: 0.8), value: isPromptFocused)
             .overlay(alignment: .topLeading) {
                 if prompt.isEmpty {
                     Text("Ex: quero algo cítrico, leve e refrescante com gin")
                         .font(.subheadline)
                         .foregroundStyle(DrinkColors.textSecondary)
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 20)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 22)
                         .allowsHitTesting(false)
                 }
             }
@@ -151,75 +166,140 @@ struct AIBartenderView: View {
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .background(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? DrinkColors.textSecondary : DrinkColors.accent)
+                .background(
+                    prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    ? DrinkColors.textSecondary
+                    : DrinkColors.accent
+                )
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
+        .buttonStyle(PremiumButtonStyle())
     }
 
     private func suggestionCard(_ suggestion: AIBartenderSuggestion) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text(suggestion.name)
-                .font(.title.bold())
+        PremiumCard {
+            VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(suggestion.name)
+                        .font(.title.bold())
+                        .foregroundStyle(DrinkColors.textPrimary)
+
+                    Text(suggestion.description)
+                        .font(.subheadline)
+                        .foregroundStyle(DrinkColors.textSecondary)
+                }
+
+                if let currentMatch {
+                    FadeInView(delay: 0.05) {
+                        AIRecipeMatchCard(match: currentMatch)
+                    }
+                }
+
+                FadeInView(delay: 0.10) {
+                    RecipeMetadataCard(
+                        metadata: RecipeMetadataBuilder.build(for: suggestion)
+                    )
+                }
+
+                versionControl
+
+                FadeInView(delay: 0.15) {
+                    evolutionSection
+                }
+
+                FadeInView(delay: 0.20) {
+                    chatButton(for: suggestion)
+                }
+
+                ingredientsSection(for: suggestion)
+
+                instructionsSection(for: suggestion)
+
+                saveButton(for: suggestion)
+            }
+        }
+        .scaleOnAppear()
+    }
+
+    private func ingredientsSection(
+        for suggestion: AIBartenderSuggestion
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Ingredientes")
+                .font(.headline)
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            Text(suggestion.description)
-                .font(.subheadline)
-                .foregroundStyle(DrinkColors.textSecondary)
-            
-            if let currentMatch {
-                AIRecipeMatchCard(match: currentMatch)
-            }
-            
-            RecipeMetadataCard(
-                metadata: RecipeMetadataBuilder.build(for: suggestion)
-            )
-
-            versionControl
-
-            evolutionSection
-
-            chatButton(for: suggestion)
-            
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Ingredientes")
-                    .font(.headline)
-                    .foregroundStyle(DrinkColors.textPrimary)
-
+            VStack(spacing: 8) {
                 ForEach(suggestion.ingredients) { ingredient in
-                    Text("\(formattedAmount(ingredient.amount)) \(ingredient.unit.rawValue) \(ingredient.name)")
-                        .foregroundStyle(DrinkColors.textSecondary)
+                    HStack {
+                        Text("\(formattedAmount(ingredient.amount)) \(ingredient.unit.rawValue)")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(DrinkColors.accent)
+                            .frame(width: 72, alignment: .leading)
+
+                        Text(ingredient.name)
+                            .foregroundStyle(DrinkColors.textSecondary)
+
+                        Spacer()
+                    }
+                    .padding(12)
+                    .background(DrinkColors.cardSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
             }
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Preparo")
-                    .font(.headline)
-                    .foregroundStyle(DrinkColors.textPrimary)
-
-                ForEach(Array(suggestion.instructions.enumerated()), id: \.offset) { index, step in
-                    Text("\(index + 1). \(step)")
-                        .foregroundStyle(DrinkColors.textSecondary)
-                }
-            }
-
-            Button {
-                appState.saveAISuggestion(suggestion)
-                HapticService.success()
-            } label: {
-                Text(appState.isAISuggestionSaved(suggestion) ? "Drink salvo" : "Salvar Drink")
-                    .font(.headline)
-                    .foregroundStyle(.black)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(DrinkColors.accent)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .disabled(appState.isAISuggestionSaved(suggestion))
         }
-        .padding(20)
-        .background(DrinkColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+
+    private func instructionsSection(
+        for suggestion: AIBartenderSuggestion
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Preparo")
+                .font(.headline)
+                .foregroundStyle(DrinkColors.textPrimary)
+
+            VStack(spacing: 10) {
+                ForEach(Array(suggestion.instructions.enumerated()), id: \.offset) { index, step in
+                    HStack(alignment: .top, spacing: 12) {
+                        Text("\(index + 1)")
+                            .font(.caption.bold())
+                            .foregroundStyle(.black)
+                            .frame(width: 28, height: 28)
+                            .background(DrinkColors.accent)
+                            .clipShape(Circle())
+
+                        Text(step)
+                            .foregroundStyle(DrinkColors.textSecondary)
+                            .lineSpacing(3)
+
+                        Spacer()
+                    }
+                    .padding(12)
+                    .background(DrinkColors.cardSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+            }
+        }
+    }
+
+    private func saveButton(
+        for suggestion: AIBartenderSuggestion
+    ) -> some View {
+        Button {
+            appState.saveAISuggestion(suggestion)
+            HapticService.success()
+        } label: {
+            Text(appState.isAISuggestionSaved(suggestion) ? "Drink salvo" : "Salvar Drink")
+                .font(.headline)
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(DrinkColors.accent)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .disabled(appState.isAISuggestionSaved(suggestion))
+        .buttonStyle(PremiumButtonStyle())
     }
 
     private func createDrink() {
@@ -227,7 +307,7 @@ struct AIBartenderView: View {
         suggestion = nil
         recipeMatch = nil
         isLoading = true
-        
+
         startLoadingMessages()
 
         Task {
@@ -275,7 +355,7 @@ struct AIBartenderView: View {
             ? String(Int(value))
             : String(format: "%.1f", value)
     }
-    
+
     private var selectedVersion: AIRecipeVersion? {
         guard recipeVersions.indices.contains(selectedVersionIndex) else {
             return nil
@@ -291,7 +371,7 @@ struct AIBartenderView: View {
     private var currentMatch: AIRecipeMatch? {
         selectedVersion?.match
     }
-    
+
     private var versionControl: some View {
         Group {
             if recipeVersions.count > 1 {
@@ -305,6 +385,7 @@ struct AIBartenderView: View {
                         Image(systemName: "chevron.left.circle.fill")
                     }
                     .disabled(selectedVersionIndex == 0)
+                    .buttonStyle(PremiumButtonStyle())
 
                     Spacer()
 
@@ -323,6 +404,7 @@ struct AIBartenderView: View {
                         Image(systemName: "chevron.right.circle.fill")
                     }
                     .disabled(selectedVersionIndex == recipeVersions.count - 1)
+                    .buttonStyle(PremiumButtonStyle())
                 }
                 .font(.title3)
                 .foregroundStyle(DrinkColors.accent)
@@ -349,7 +431,7 @@ struct AIBartenderView: View {
                             .background(DrinkColors.accent)
                             .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PremiumButtonStyle())
                     .disabled(isLoading)
                 }
             }
@@ -361,13 +443,13 @@ struct AIBartenderView: View {
             }
         }
     }
-    
+
     private func evolveRecipe(_ option: AIRecipeEvolution) {
         guard let currentSuggestion else { return }
 
         isLoading = true
         startLoadingMessages()
-        
+
         evolvingOption = option
 
         Task {
@@ -402,7 +484,7 @@ struct AIBartenderView: View {
             }
         }
     }
-    
+
     private func chatButton(
         for suggestion: AIBartenderSuggestion
     ) -> some View {
@@ -434,31 +516,31 @@ struct AIBartenderView: View {
             .background(DrinkColors.cardSecondary)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PremiumButtonStyle())
     }
-    
+
     private var aiLoadingView: some View {
-        HStack(spacing: 14) {
-            ProgressView()
-                .tint(DrinkColors.accent)
+        PremiumCard {
+            HStack(spacing: 14) {
+                ProgressView()
+                    .tint(DrinkColors.accent)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(loadingMessages[loadingMessageIndex])
-                    .font(.headline)
-                    .foregroundStyle(DrinkColors.textPrimary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(loadingMessages[loadingMessageIndex])
+                        .font(.headline)
+                        .foregroundStyle(DrinkColors.textPrimary)
 
-                Text("O Bartender está preparando algo especial.")
-                    .font(.caption)
-                    .foregroundStyle(DrinkColors.textSecondary)
+                    Text("O Bartender está preparando algo especial.")
+                        .font(.caption)
+                        .foregroundStyle(DrinkColors.textSecondary)
+                }
+
+                Spacer()
             }
-
-            Spacer()
         }
-        .padding(18)
-        .background(DrinkColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .scaleOnAppear()
     }
-    
+
     private func startLoadingMessages() {
         loadingMessageIndex = 0
 
