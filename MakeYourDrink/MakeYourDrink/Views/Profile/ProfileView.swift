@@ -18,16 +18,45 @@ struct ProfileView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
-                        header
-                        userCard
-                        ProfileStatsView()
-                        achievementsButton
-                        historyButton
-                        preferencesSection
-                        myAIDrinksButton
-                        editPreferencesButton
-                        aboutButton
-                        premiumSection
+                        FadeInView(delay: 0.00) {
+                            header
+                        }
+
+                        FadeInView(delay: 0.05) {
+                            userCard
+                        }
+
+                        FadeInView(delay: 0.10) {
+                            ProfileStatsView()
+                        }
+
+                        FadeInView(delay: 0.15) {
+                            achievementsButton
+                        }
+
+                        FadeInView(delay: 0.20) {
+                            historyButton
+                        }
+
+                        FadeInView(delay: 0.25) {
+                            preferencesSection
+                        }
+
+                        FadeInView(delay: 0.30) {
+                            myAIDrinksButton
+                        }
+
+                        FadeInView(delay: 0.35) {
+                            editPreferencesButton
+                        }
+
+                        FadeInView(delay: 0.40) {
+                            aboutButton
+                        }
+
+                        FadeInView(delay: 0.45) {
+                            premiumSection
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -52,31 +81,31 @@ struct ProfileView: View {
     }
 
     private var userCard: some View {
-        HStack(spacing: 14) {
-            Circle()
-                .fill(DrinkColors.cardSecondary)
-                .frame(width: 64, height: 64)
-                .overlay {
-                    Image(systemName: "person.fill")
-                        .font(.title2)
-                        .foregroundStyle(DrinkColors.accent)
+        PremiumCard {
+            HStack(spacing: 14) {
+                Circle()
+                    .fill(DrinkColors.cardSecondary)
+                    .frame(width: 64, height: 64)
+                    .overlay {
+                        Image(systemName: "person.fill")
+                            .font(.title2)
+                            .foregroundStyle(DrinkColors.accent)
+                    }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Bartender iniciante")
+                        .font(.headline)
+                        .foregroundStyle(DrinkColors.textPrimary)
+
+                    Text("\(appState.favoriteDrinkIDs.count) drink\(appState.favoriteDrinkIDs.count == 1 ? "" : "s") favorito\(appState.favoriteDrinkIDs.count == 1 ? "" : "s")")
+                        .font(.subheadline)
+                        .foregroundStyle(DrinkColors.textSecondary)
                 }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Bartender iniciante")
-                    .font(.headline)
-                    .foregroundStyle(DrinkColors.textPrimary)
-
-                Text("\(appState.favoriteDrinkIDs.count) drink\(appState.favoriteDrinkIDs.count == 1 ? "" : "s") favorito\(appState.favoriteDrinkIDs.count == 1 ? "" : "s")")
-                    .font(.subheadline)
-                    .foregroundStyle(DrinkColors.textSecondary)
+                Spacer()
             }
-
-            Spacer()
         }
-        .padding(18)
-        .background(DrinkColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .scaleOnAppear()
     }
 
     private var preferencesSection: some View {
@@ -117,43 +146,35 @@ struct ProfileView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            VStack(alignment: .leading, spacing: 16) {
-                Image(systemName: "crown.fill")
-                    .font(.system(size: 30))
-                    .foregroundStyle(DrinkColors.accent)
+            PremiumCard {
+                VStack(alignment: .leading, spacing: 16) {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 30))
+                        .foregroundStyle(DrinkColors.accent)
+                        .symbolEffect(.pulse)
 
-                Text("Desbloqueie a IA Bartender")
-                    .font(.headline)
-                    .foregroundStyle(DrinkColors.textPrimary)
-
-                Text("Crie drinks personalizados, escaneie ingredientes ilimitados e receba sugestões baseadas no seu gosto.")
-                    .font(.subheadline)
-                    .foregroundStyle(DrinkColors.textSecondary)
-
-                NavigationLink {
-                    PremiumView()
-                } label: {
-                    Text("Ver Premium")
+                    Text("Desbloqueie a IA Bartender")
                         .font(.headline)
-                        .foregroundStyle(.black)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(DrinkColors.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .foregroundStyle(DrinkColors.textPrimary)
+
+                    Text("Crie drinks personalizados, escaneie ingredientes ilimitados e receba sugestões baseadas no seu gosto.")
+                        .font(.subheadline)
+                        .foregroundStyle(DrinkColors.textSecondary)
+
+                    NavigationLink {
+                        PremiumView()
+                    } label: {
+                        Text("Ver Premium")
+                            .font(.headline)
+                            .foregroundStyle(.black)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(DrinkColors.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
+                    .buttonStyle(PremiumButtonStyle())
                 }
             }
-            .padding(20)
-            .background(
-                LinearGradient(
-                    colors: [
-                        DrinkColors.cardSecondary,
-                        DrinkColors.card
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         }
     }
 
@@ -181,9 +202,13 @@ struct ProfileView: View {
         }
         .padding(16)
         .background(DrinkColors.card)
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.05), lineWidth: 1)
+        }
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
-    
+
     private var editPreferencesButton: some View {
         NavigationLink {
             EditPreferencesView()
@@ -196,78 +221,72 @@ struct ProfileView: View {
                 .background(DrinkColors.accent)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
+        .buttonStyle(PremiumButtonStyle())
     }
-    
+
     private var myAIDrinksButton: some View {
-
-        NavigationLink {
-
+        premiumRowButton(
+            icon: "sparkles",
+            title: "Meus Drinks IA",
+            value: "\(appState.savedAISuggestions.count)"
+        ) {
             SavedAIDrinksView()
-
-        } label: {
-
-            HStack {
-
-                Image(systemName: "sparkles")
-
-                Text("Meus Drinks IA")
-
-                Spacer()
-
-                Text(
-                    "\(appState.savedAISuggestions.count)"
-                )
-                .foregroundStyle(
-                    DrinkColors.textSecondary
-                )
-            }
-            .padding(16)
-            .background(
-                DrinkColors.card
-            )
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: 18,
-                    style: .continuous
-                )
-            )
         }
-        .buttonStyle(.plain)
     }
-    
+
     private var historyButton: some View {
-        NavigationLink {
+        premiumRowButton(
+            icon: "clock.arrow.circlepath",
+            title: "Últimos preparados",
+            value: "\(appState.drinkHistory.count)"
+        ) {
             DrinkHistoryView()
-        } label: {
-            HStack {
-                Image(systemName: "clock.arrow.circlepath")
-                Text("Últimos preparados")
-
-                Spacer()
-
-                Text("\(appState.drinkHistory.count)")
-                    .foregroundStyle(DrinkColors.textSecondary)
-
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(DrinkColors.textSecondary)
-            }
-            .padding(16)
-            .background(DrinkColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
-        .buttonStyle(.plain)
     }
-    
+
     private var aboutButton: some View {
-        NavigationLink {
+        premiumRowButton(
+            icon: "info.circle.fill",
+            title: "Sobre o App",
+            value: nil
+        ) {
             AboutView()
+        }
+    }
+
+    private var achievementsButton: some View {
+        premiumRowButton(
+            icon: "trophy.fill",
+            title: "Conquistas",
+            value: nil
+        ) {
+            AchievementsView()
+        }
+    }
+
+    private func premiumRowButton<Destination: View>(
+        icon: String,
+        title: String,
+        value: String?,
+        @ViewBuilder destination: @escaping () -> Destination
+    ) -> some View {
+        NavigationLink {
+            destination()
         } label: {
-            HStack {
-                Image(systemName: "info.circle.fill")
-                Text("Sobre o App")
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .foregroundStyle(DrinkColors.accent)
+                    .frame(width: 24)
+
+                Text(title)
+                    .foregroundStyle(DrinkColors.textPrimary)
 
                 Spacer()
+
+                if let value {
+                    Text(value)
+                        .foregroundStyle(DrinkColors.textSecondary)
+                }
 
                 Image(systemName: "chevron.right")
                     .font(.caption)
@@ -275,48 +294,12 @@ struct ProfileView: View {
             }
             .padding(16)
             .background(DrinkColors.card)
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.05), lineWidth: 1)
+            }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
-        .buttonStyle(.plain)
-    }
-    
-    private var achievementsButton: some View {
-
-        NavigationLink {
-
-            AchievementsView()
-
-        } label: {
-
-            HStack {
-
-                Image(
-                    systemName: "trophy.fill"
-                )
-
-                Text("Conquistas")
-
-                Spacer()
-
-                Image(
-                    systemName: "chevron.right"
-                )
-                .font(.caption)
-                .foregroundStyle(
-                    DrinkColors.textSecondary
-                )
-            }
-            .padding(16)
-            .background(
-                DrinkColors.card
-            )
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: 18,
-                    style: .continuous
-                )
-            )
-        }
-        .buttonStyle(.plain)
+        .buttonStyle(PremiumButtonStyle())
     }
 }
