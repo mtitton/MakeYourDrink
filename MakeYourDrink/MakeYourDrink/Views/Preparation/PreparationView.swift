@@ -20,22 +20,36 @@ struct PreparationView: View {
         currentStep == drink.instructions.count - 1
     }
 
+    private var progress: Double {
+        guard !drink.instructions.isEmpty else { return 0 }
+        return Double(currentStep + 1) / Double(drink.instructions.count)
+    }
+
     var body: some View {
         ZStack {
             DrinkColors.background
                 .ignoresSafeArea()
 
             VStack(spacing: 24) {
-                header
-                progressCard
+                FadeInView(delay: 0.00) {
+                    header
+                }
+
+                FadeInView(delay: 0.05) {
+                    progressCard
+                }
 
                 Spacer()
 
-                stepCard
+                FadeInView(delay: 0.10) {
+                    stepCard
+                }
 
                 Spacer()
 
-                controls
+                FadeInView(delay: 0.15) {
+                    controls
+                }
             }
             .padding(20)
         }
@@ -63,69 +77,74 @@ struct PreparationView: View {
     }
 
     private var progressCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Passo \(currentStep + 1) de \(drink.instructions.count)")
-                    .font(.headline)
-                    .foregroundStyle(DrinkColors.textPrimary)
+        PremiumCard {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Passo \(currentStep + 1) de \(drink.instructions.count)")
+                        .font(.headline)
+                        .foregroundStyle(DrinkColors.textPrimary)
 
-                Spacer()
+                    Spacer()
 
-                Text("\(Int(progress * 100))%")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(DrinkColors.accent)
+                    Text("\(Int(progress * 100))%")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(DrinkColors.accent)
+                }
+
+                ProgressView(value: progress)
+                    .tint(DrinkColors.accent)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.82), value: progress)
             }
-
-            ProgressView(value: progress)
-                .tint(DrinkColors.accent)
         }
-        .padding(16)
-        .background(DrinkColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
     private var stepCard: some View {
-        VStack(spacing: 26) {
-            ZStack {
-                Circle()
-                    .fill(DrinkColors.accent)
-                    .frame(width: 104, height: 104)
+        PremiumCard {
+            VStack(spacing: 26) {
+                ZStack {
+                    Circle()
+                        .fill(DrinkColors.accent)
+                        .frame(width: 104, height: 104)
+                        .shadow(
+                            color: DrinkColors.accent.opacity(0.25),
+                            radius: 18,
+                            y: 8
+                        )
 
-                Text("\(currentStep + 1)")
-                    .font(.system(size: 52, weight: .bold))
-                    .foregroundStyle(.black)
+                    Text("\(currentStep + 1)")
+                        .font(.system(size: 52, weight: .bold))
+                        .foregroundStyle(.black)
+                        .contentTransition(.numericText())
+                }
+
+                Text(drink.instructions[currentStep])
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(DrinkColors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .id(currentStep)
+                    .transition(
+                        .asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        )
+                    )
+
+                if isLastStep {
+                    Text("Último passo")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(DrinkColors.accent)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(DrinkColors.cardSecondary)
+                        .clipShape(Capsule())
+                        .scaleOnAppear()
+                }
             }
-
-            Text(drink.instructions[currentStep])
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(DrinkColors.textPrimary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-
-            if isLastStep {
-                Text("Último passo")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(DrinkColors.accent)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(DrinkColors.cardSecondary)
-                    .clipShape(Capsule())
-            }
+            .frame(maxWidth: .infinity)
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: currentStep)
         }
-        .padding(30)
-        .frame(maxWidth: .infinity)
-        .background(
-            LinearGradient(
-                colors: [
-                    DrinkColors.cardSecondary,
-                    DrinkColors.card
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: currentStep)
+        .scaleOnAppear()
     }
 
     private var controls: some View {
@@ -141,6 +160,7 @@ struct PreparationView: View {
                     .background(DrinkColors.accent)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
+            .buttonStyle(PremiumButtonStyle())
 
             Button {
                 goBack()
@@ -155,17 +175,16 @@ struct PreparationView: View {
             }
             .disabled(currentStep == 0)
             .opacity(currentStep == 0 ? 0.45 : 1)
+            .buttonStyle(PremiumButtonStyle())
         }
-    }
-
-    private var progress: Double {
-        guard !drink.instructions.isEmpty else { return 0 }
-        return Double(currentStep + 1) / Double(drink.instructions.count)
     }
 
     private func advance() {
         if currentStep < drink.instructions.count - 1 {
-            currentStep += 1
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                currentStep += 1
+            }
+
             HapticService.light()
         } else {
             appState.registerPreparedDrink(drink)
@@ -177,7 +196,10 @@ struct PreparationView: View {
     private func goBack() {
         guard currentStep > 0 else { return }
 
-        currentStep -= 1
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+            currentStep -= 1
+        }
+
         HapticService.light()
     }
 }
