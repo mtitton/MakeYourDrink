@@ -8,24 +8,22 @@
 import SwiftUI
 
 struct SearchView: View {
-
     @EnvironmentObject private var appState: AppState
+    @Namespace private var drinkNamespace
 
     @State private var searchText = ""
 
     private var filteredMatches: [DrinkMatch] {
+        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if searchText.isEmpty {
+        if trimmed.isEmpty {
             return appState.matches
         }
 
-        let query = searchText.lowercased()
+        let query = trimmed.lowercased()
 
         return appState.matches.filter { match in
-
-            if match.drink.name
-                .lowercased()
-                .contains(query) {
+            if match.drink.name.lowercased().contains(query) {
                 return true
             }
 
@@ -40,27 +38,35 @@ struct SearchView: View {
     }
 
     var body: some View {
-
         ZStack {
-
             DrinkColors.background
                 .ignoresSafeArea()
 
             if filteredMatches.isEmpty {
-
-                emptyState
-
+                FadeInView(delay: 0.00) {
+                    emptyState
+                }
+                .padding(20)
             } else {
-
                 ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 18) {
+                        FadeInView(delay: 0.00) {
+                            resultsHeader
+                        }
 
-                    VStack(spacing: 14) {
-
-                        ForEach(filteredMatches) { match in
-                            DrinkCard(match: match)
+                        LazyVStack(spacing: 14) {
+                            ForEach(Array(filteredMatches.enumerated()), id: \.element.id) { index, match in
+                                FadeInView(delay: Double(index) * 0.035) {
+                                    DrinkCard(
+                                        match: match,
+                                        namespace: drinkNamespace
+                                    )
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
+                    .padding(.top, 12)
                     .padding(.bottom, 32)
                 }
             }
@@ -73,25 +79,47 @@ struct SearchView: View {
         )
     }
 
-    private var emptyState: some View {
+    private var resultsHeader: some View {
+        PremiumCard {
+            HStack(spacing: 14) {
+                Image(systemName: "magnifyingglass")
+                    .font(.title3)
+                    .foregroundStyle(DrinkColors.accent)
 
-        VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Todos os drinks" : "Resultados")
+                        .font(.headline)
+                        .foregroundStyle(DrinkColors.textPrimary)
 
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundStyle(
-                    DrinkColors.accent
-                )
+                    Text("\(filteredMatches.count) drink\(filteredMatches.count == 1 ? "" : "s") encontrado\(filteredMatches.count == 1 ? "" : "s")")
+                        .font(.subheadline)
+                        .foregroundStyle(DrinkColors.textSecondary)
+                }
 
-            Text("Nenhum drink encontrado")
-                .font(.title3.bold())
-
-            Text(
-                "Tente pesquisar por nome ou ingrediente."
-            )
-            .foregroundStyle(
-                DrinkColors.textSecondary
-            )
+                Spacer()
+            }
         }
+        .scaleOnAppear()
+    }
+
+    private var emptyState: some View {
+        PremiumCard {
+            VStack(spacing: 16) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 48))
+                    .foregroundStyle(DrinkColors.accent)
+
+                Text("Nenhum drink encontrado")
+                    .font(.title3.bold())
+                    .foregroundStyle(DrinkColors.textPrimary)
+
+                Text("Tente pesquisar por nome, categoria ou ingrediente.")
+                    .font(.subheadline)
+                    .foregroundStyle(DrinkColors.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .scaleOnAppear()
     }
 }
