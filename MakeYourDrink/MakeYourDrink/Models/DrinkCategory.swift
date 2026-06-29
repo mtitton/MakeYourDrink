@@ -18,6 +18,7 @@ enum DrinkCategory: String, CaseIterable, Identifiable, Codable {
     case dessert = "Sobremesa"
     case mocktail = "Sem álcool"
     case signature = "Autoral"
+    case modern = "Moderno"
 
     var id: String { rawValue }
 }

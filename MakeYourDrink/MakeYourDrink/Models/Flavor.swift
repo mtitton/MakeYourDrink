@@ -18,6 +18,9 @@ enum Flavor: String, CaseIterable, Identifiable, Codable {
     case creamy = "Cremoso"
     case strong = "Intenso"
     case dry = "Seco"
+    case floral = "Floral"
+    case nutty = "Amendoado"
+    case tropical = "Tropical"
 
     var id: String { rawValue }
 }

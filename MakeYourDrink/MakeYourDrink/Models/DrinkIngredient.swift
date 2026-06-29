@@ -30,4 +30,5 @@ enum DrinkUnit: String, Codable {
     case ml = "ml"
     case piece = "un"
     case leaf = "folhas"
+    case dash = "dash"
 }
