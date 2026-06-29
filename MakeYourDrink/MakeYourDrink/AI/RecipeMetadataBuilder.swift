@@ -44,12 +44,12 @@ enum RecipeMetadataBuilder {
     static func build(for drink: Drink) -> DrinkRecipeMetadata {
         DrinkRecipeMetadata(
             preparationTime: drink.ingredients.count > 5 ? "4 min" : "2 min",
-            servings: "1 drink",
+            servings: "\(drink.servings) drink\(drink.servings == 1 ? "" : "s")",
             alcoholLevel: drink.alcoholicLevel.rawValue,
-            glass: "Highball",
-            method: "Build",
+            glass: drink.metadata.glass.rawValue,
+            method: drink.metadata.category.rawValue,
             difficulty: drink.difficulty.rawValue,
-            pairing: ["Petiscos", "Aperitivos"]
+            pairing: drink.metadata.tags.map { $0.rawValue }
         )
     }
 }

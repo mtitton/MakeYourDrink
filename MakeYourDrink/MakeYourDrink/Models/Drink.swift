@@ -29,7 +29,7 @@ struct Drink: Identifiable, Hashable {
         alcoholicLevel: AlcoholicLevel,
         difficulty: Difficulty,
         servings: Int = 1,
-        metadata: DrinkMetadata = .default
+        metadata: DrinkMetadata? = nil
     ) {
         self.id = id
         self.name = name
@@ -40,7 +40,7 @@ struct Drink: Identifiable, Hashable {
         self.alcoholicLevel = alcoholicLevel
         self.difficulty = difficulty
         self.servings = servings
-        self.metadata = metadata
+        self.metadata = metadata ?? DrinkMetadataFactory.metadata(for: name)
     }
 }
 
