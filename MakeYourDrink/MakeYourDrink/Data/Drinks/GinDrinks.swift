@@ -588,36 +588,6 @@ enum GinDrinks {
                 isIBA: true,
                 isClassic: true
             )
-        ),
-
-        Drink(
-            id: UUID(uuidString: "50000020-5000-5000-5000-500000000020")!,
-            name: "Orange Gin",
-            description: "Refrescante, cítrico e perfeito para o verão.",
-            imageName: "orange_gin",
-            ingredients: [
-                DrinkIngredient(name: "Gin", amount: 50, unit: .ml),
-                DrinkIngredient(name: "Suco de Laranja", amount: 120, unit: .ml),
-                DrinkIngredient(name: "Água com gás", amount: 50, unit: .ml)
-            ],
-            instructions: [
-                "Adicione gelo.",
-                "Misture gin e suco.",
-                "Complete com água com gás."
-            ],
-            alcoholicLevel: .low,
-            difficulty: .easy,
-            metadata: DrinkMetadata(
-                category: .signature,
-                glass: .highball,
-                origin: "Autoral",
-                year: nil,
-                garnish: "Fatia de laranja",
-                flavorProfile: [.sour, .refreshing, .fruity],
-                tags: [.easy, .summer, .party],
-                isIBA: false,
-                isClassic: false
-            )
         )
     ]
 }
