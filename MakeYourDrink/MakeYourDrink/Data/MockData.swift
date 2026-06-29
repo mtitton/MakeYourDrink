@@ -50,5 +50,10 @@ enum MockData {
         RumDrinks.items +
         WhiskyDrinks.items +
         TequilaDrinks.items +
-        MocktailDrinks.items
+        MocktailDrinks.items +
+        BrandyDrinks.items +
+        LiqueurDrinks.items +
+        WineDrinks.items +
+        BeerDrinks.items +
+        ChampagneDrinks.items
 }
