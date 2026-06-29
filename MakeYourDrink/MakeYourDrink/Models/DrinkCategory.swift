@@ -1,0 +1,23 @@
+//
+//  DrinkCategory.swift
+//  MakeYourDrink
+//
+//  Created by Marcus Titton on 29/06/26.
+//
+
+import Foundation
+
+enum DrinkCategory: String, CaseIterable, Identifiable, Codable {
+    case classic = "Clássico"
+    case sour = "Sour"
+    case tiki = "Tiki"
+    case highball = "Highball"
+    case martini = "Martini"
+    case spritz = "Spritz"
+    case frozen = "Frozen"
+    case dessert = "Sobremesa"
+    case mocktail = "Sem álcool"
+    case signature = "Autoral"
+
+    var id: String { rawValue }
+}

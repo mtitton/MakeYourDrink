@@ -17,6 +17,7 @@ struct Drink: Identifiable, Hashable {
     let alcoholicLevel: AlcoholicLevel
     let difficulty: Difficulty
     let servings: Int
+    let metadata: DrinkMetadata
 
     init(
         id: UUID = UUID(),
@@ -27,7 +28,8 @@ struct Drink: Identifiable, Hashable {
         instructions: [String],
         alcoholicLevel: AlcoholicLevel,
         difficulty: Difficulty,
-        servings: Int = 1
+        servings: Int = 1,
+        metadata: DrinkMetadata = .default
     ) {
         self.id = id
         self.name = name
@@ -38,6 +40,7 @@ struct Drink: Identifiable, Hashable {
         self.alcoholicLevel = alcoholicLevel
         self.difficulty = difficulty
         self.servings = servings
+        self.metadata = metadata
     }
 }
 
