@@ -54,9 +54,9 @@ struct ProfileView: View {
                             aboutButton
                         }
 
-                        FadeInView(delay: 0.45) {
-                            premiumSection
-                        }
+//                        FadeInView(delay: 0.45) {
+//                            premiumSection
+//                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
