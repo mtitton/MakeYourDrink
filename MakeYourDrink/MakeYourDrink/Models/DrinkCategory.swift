@@ -24,6 +24,7 @@ enum DrinkCategory: String, CaseIterable, Identifiable, Codable {
     case wine = "Vinho"
     case beer = "Cerveja"
     case afterDinner = "Pós jantar"
+    case shot = "Shot"
 
     var id: String { rawValue }
 }
