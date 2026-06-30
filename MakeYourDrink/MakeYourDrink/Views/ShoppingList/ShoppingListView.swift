@@ -111,10 +111,18 @@ struct ShoppingListView: View {
                     .foregroundStyle(DrinkColors.textSecondary)
             }
 
-            VStack(spacing: 10) {
-                ForEach(Array(appState.shoppingListItems.enumerated()), id: \.element.id) { index, item in
-                    FadeInView(delay: Double(index) * 0.03) {
-                        manualItemRow(item)
+            VStack(alignment: .leading, spacing: 18) {
+                ForEach(groupedShoppingItems, id: \.category.id) { group in
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(group.category.rawValue)
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(DrinkColors.accent)
+
+                        VStack(spacing: 10) {
+                            ForEach(group.items) { item in
+                                manualItemRow(item)
+                            }
+                        }
                     }
                 }
             }
@@ -192,10 +200,18 @@ struct ShoppingListView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(DrinkColors.textPrimary)
 
-            VStack(spacing: 12) {
-                ForEach(Array(suggestions.enumerated()), id: \.element.id) { index, suggestion in
-                    FadeInView(delay: Double(index) * 0.03) {
-                        suggestionRow(suggestion)
+            VStack(alignment: .leading, spacing: 18) {
+                ForEach(groupedSuggestions, id: \.category.id) { group in
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(group.category.rawValue)
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(DrinkColors.accent)
+
+                        VStack(spacing: 12) {
+                            ForEach(group.suggestions) { suggestion in
+                                suggestionRow(suggestion)
+                            }
+                        }
                     }
                 }
             }
@@ -230,7 +246,7 @@ struct ShoppingListView: View {
                         .font(.title3)
                         .foregroundStyle(DrinkColors.accent)
                 }
-                .buttonStyle(PremiumButtonStyle())
+                .buttonStyle(.plain)
 
                 Image(systemName: "chevron.right")
                     .font(.caption)
@@ -238,13 +254,9 @@ struct ShoppingListView: View {
             }
             .padding(16)
             .background(DrinkColors.card)
-            .overlay {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.05), lineWidth: 1)
-            }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
-        .buttonStyle(PremiumButtonStyle())
+        .buttonStyle(.plain)
     }
 
     private var emptyState: some View {
@@ -267,5 +279,31 @@ struct ShoppingListView: View {
             .frame(maxWidth: .infinity)
         }
         .scaleOnAppear()
+    }
+    
+    private var groupedShoppingItems: [(category: IngredientCategory, items: [ShoppingListItem])] {
+        Dictionary(grouping: appState.shoppingListItems) {
+            IngredientCatalog.category(for: $0.name)
+        }
+        .map { category, items in
+            (
+                category: category,
+                items: items.sorted { $0.name < $1.name }
+            )
+        }
+        .sorted { $0.category.rawValue < $1.category.rawValue }
+    }
+
+    private var groupedSuggestions: [(category: IngredientCategory, suggestions: [ShoppingSuggestion])] {
+        Dictionary(grouping: suggestions) {
+            IngredientCatalog.category(for: $0.ingredientName)
+        }
+        .map { category, suggestions in
+            (
+                category: category,
+                suggestions: suggestions.sorted { $0.ingredientName < $1.ingredientName }
+            )
+        }
+        .sorted { $0.category.rawValue < $1.category.rawValue }
     }
 }
