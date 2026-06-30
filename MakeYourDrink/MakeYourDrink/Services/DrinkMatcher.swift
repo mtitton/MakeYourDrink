@@ -20,30 +20,29 @@ final class DrinkMatcher {
         drinks: [Drink],
         userIngredients: [Ingredient]
     ) -> [DrinkMatch] {
-        let userIngredientNames = Set(
-            userIngredients.map { $0.name.lowercased() }
-        )
 
-        return drinks.map { drink in
-            let drinkIngredientNames = drink.ingredients.map {
-                $0.name.lowercased()
+        drinks.map { drink in
+            var available: [String] = []
+            var missing: [String] = []
+
+            for ingredient in drink.ingredients {
+                let hasIngredient = IngredientMatcher.matches(
+                    requiredName: ingredient.name,
+                    userIngredients: userIngredients
+                )
+
+                if hasIngredient {
+                    available.append(ingredient.name)
+                } else {
+                    missing.append(ingredient.name)
+                }
             }
 
-            let available = drink.ingredients
-                .filter {
-                    userIngredientNames.contains($0.name.lowercased())
-                }
-                .map { $0.name }
+            let total = drink.ingredients.count
 
-            let missing = drink.ingredients
-                .filter {
-                    !userIngredientNames.contains($0.name.lowercased())
-                }
-                .map { $0.name }
-
-            let percentage = drinkIngredientNames.isEmpty
+            let percentage = total == 0
                 ? 0
-                : Int((Double(available.count) / Double(drinkIngredientNames.count)) * 100)
+                : Int((Double(available.count) / Double(total)) * 100)
 
             return DrinkMatch(
                 drink: drink,
@@ -52,6 +51,12 @@ final class DrinkMatcher {
                 missingIngredients: missing
             )
         }
-        .sorted { $0.matchPercentage > $1.matchPercentage }
+        .sorted {
+            if $0.matchPercentage == $1.matchPercentage {
+                return $0.drink.name < $1.drink.name
+            }
+
+            return $0.matchPercentage > $1.matchPercentage
+        }
     }
 }

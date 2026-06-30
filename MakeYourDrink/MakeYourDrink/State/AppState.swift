@@ -13,6 +13,7 @@ final class AppState: ObservableObject {
     @Published var userIngredients: [Ingredient] {
         didSet {
             LocalStorageService.saveUserIngredients(userIngredients)
+            updateMatches()
         }
     }
 
@@ -51,6 +52,8 @@ final class AppState: ObservableObject {
             LocalStorageService.saveShoppingListItems(shoppingListItems)
         }
     }
+    
+    @Published private(set) var matches: [DrinkMatch] = []
 
     init() {
         self.userIngredients = LocalStorageService.loadUserIngredients() ?? MockData.userBar
@@ -60,15 +63,16 @@ final class AppState: ObservableObject {
         self.drinkHistory = LocalStorageService.loadDrinkHistory()
         self.drinkRatings = LocalStorageService.loadDrinkRatings()
         self.shoppingListItems = LocalStorageService.loadShoppingListItems()
+        updateMatches()
     }
 
-    var matches: [DrinkMatch] {
-        DrinkMatcher.match(
+    private func updateMatches() {
+        matches = DrinkMatcher.match(
             drinks: MockData.drinks,
             userIngredients: userIngredients
         )
     }
-
+    
     func toggleIngredient(_ ingredient: Ingredient) {
         if userIngredients.contains(ingredient) {
             userIngredients.removeAll { $0 == ingredient }
