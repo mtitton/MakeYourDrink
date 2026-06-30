@@ -28,7 +28,12 @@ final class LocalStorageService {
             return nil
         }
 
-        return try? JSONDecoder().decode([Ingredient].self, from: data)
+        if let ingredients = try? JSONDecoder().decode([Ingredient].self, from: data) {
+            return ingredients
+        }
+
+        UserDefaults.standard.removeObject(forKey: Keys.userIngredients)
+        return nil
     }
 
     static func saveFavoriteDrinkIDs(_ ids: Set<UUID>) {
