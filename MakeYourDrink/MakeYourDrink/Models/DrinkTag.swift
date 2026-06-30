@@ -23,6 +23,8 @@ enum DrinkTag: String, CaseIterable, Identifiable, Codable {
     case afterDinner = "Pós jantar"
     case modern = "Moderno"
     case tiki = "Tiki"
+    case kids = "Para menores"
+    case healthy = "Saudável"
 
     var id: String { rawValue }
 }

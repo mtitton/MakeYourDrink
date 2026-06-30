@@ -45,6 +45,7 @@ struct Drink: Identifiable, Hashable {
 }
 
 enum AlcoholicLevel: String, Hashable {
+    case none = "Não alcoólico"
     case low = "Baixo"
     case medium = "Médio"
     case high = "Alto"
