@@ -25,6 +25,7 @@ enum Flavor: String, CaseIterable, Identifiable, Codable {
     case coffee = "Café"
     case smoky = "Defumado"
     case malty = "Maltado"
+    case minty = "Mentolado"
 
     var id: String { rawValue }
 }
