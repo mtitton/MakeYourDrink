@@ -18,6 +18,7 @@ enum GlassType: String, CaseIterable, Identifiable, Codable {
     case wine = "Taça"
     case shot = "Shot"
     case hurricane = "Hurricane"
+    case irishCoffee = "Caneca Café Irlandês"
 
     var id: String { rawValue }
 }
